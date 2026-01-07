@@ -2,7 +2,7 @@ import bisect
 import datetime
 import random
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union, Any
+from typing import Dict, List, Optional, Tuple, Union, Any, SupportsFloat
 
 import pandas as pd
 import gymnasium as gym
@@ -34,11 +34,13 @@ class JssEnv(gym.Env):
         """
         if env_config is None:
             env_config = {
-                "instance_path": Path(__file__).parent.absolute() / "instances" / "ta80"
+                "instance_path": Path(__file__).parent.absolute() / "instances" / "ta80",
+                "always_allow_noop": True
             }
-        instance_path = env_config["instance_path"]
+        self.instance_path: Path = env_config["instance_path"]
+        self.always_allow_noop: bool = env_config.get('always_allow_noop', False)
 
-        # initial values for variables used for instance
+        # initial values for variables used for instancealways_allow_noop
         self.jobs = 0
         self.machines = 0
         self.instance_matrix = None
@@ -69,7 +71,7 @@ class JssEnv(gym.Env):
         # initial values for variables used for representation
         self.start_timestamp = datetime.datetime.now().timestamp()
         self.sum_op = 0
-        with open(instance_path, "r") as instance_file:
+        with open(self.instance_path, "r") as instance_file:
             for line_cnt, line_str in enumerate(instance_file, start=1):
                 split_data = list(map(int, line_str.split()))
 
@@ -142,7 +144,9 @@ class JssEnv(gym.Env):
         """
         return self.legal_actions
 
-    def reset(self) -> Dict[str, np.ndarray]:
+    def reset(self,
+              seed: int | None = None,
+              options: dict[str, Any] | None = None) -> tuple[Dict[str, np.ndarray], Dict[str, Any]]:
         """
         Reset the environment to an initial state.
         
@@ -178,7 +182,7 @@ class JssEnv(gym.Env):
                 self.machine_legal[needed_machine] = True
                 self.nb_machine_legal += 1
         self.state = np.zeros((self.jobs, 7), dtype=float)
-        return self._get_current_state_representation()
+        return self._get_current_state_representation(), dict()
 
     def _prioritization_non_final(self) -> None:
         """
@@ -400,7 +404,7 @@ class JssEnv(gym.Env):
                             time_needed += self.instance_matrix[job][time_step][1]
                             time_step += 1
 
-    def step(self, action: int) -> Tuple[Dict[str, np.ndarray], float, bool, bool, Dict]:
+    def step(self, action: int) -> tuple[dict[str, np.ndarray], SupportsFloat, bool, bool, dict[str, Any]]:
         """
         Take an action in the environment and observe the next state.
         
@@ -430,7 +434,10 @@ class JssEnv(gym.Env):
                 reward -= self.increase_time_step()
             scaled_reward = self._reward_scaler(reward)
             self._prioritization_non_final()
-            self._check_no_op()
+            if not self.always_allow_noop:
+                self._check_no_op()
+            else:
+                self.legal_actions[self.jobs] = True
             return (
                 self._get_current_state_representation(),
                 scaled_reward,
@@ -469,7 +476,10 @@ class JssEnv(gym.Env):
             while self.nb_machine_legal == 0 and len(self.next_time_step) > 0:
                 reward -= self.increase_time_step()
             self._prioritization_non_final()
-            self._check_no_op()
+            if not self.always_allow_noop:
+                self._check_no_op()
+            else:
+                self.legal_actions[self.jobs] = True
             # we then need to scale the reward
             scaled_reward = self._reward_scaler(reward)
             return (
