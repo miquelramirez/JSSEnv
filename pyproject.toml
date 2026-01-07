@@ -28,7 +28,7 @@ classifiers = [
 dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
-    "flake8>=6.0.0",
+    "ruff",
     "codecov>=2.1.0",
     "build>=1.0.0",
     "wheel>=0.40.0",

@@ -42,7 +42,8 @@ Once installed, the environment will be available in your OpenAi's gym environme
 
 ```python
 import gymnasium as gym
-import JSSEnv
+from src import JSSEnv
+
 env = gym.make('jss-v1', env_config={'instance_path': 'INSTANCE_PATH'})
 
 # Full example with a random agent
@@ -51,17 +52,17 @@ done = False
 cum_reward = 0
 
 while not done:
-    # Get legal actions from action mask
-    legal_actions = obs["action_mask"]
-    
-    # Choose a random legal action
-    action = np.random.choice(
-        len(legal_actions), 1, p=(legal_actions / legal_actions.sum())
-    )[0]
-    
-    # Take action in environment
-    obs, reward, done, truncated, _ = env.step(action)
-    cum_reward += reward
+  # Get legal actions from action mask
+  legal_actions = obs["action_mask"]
+
+  # Choose a random legal action
+  action = np.random.choice(
+    len(legal_actions), 1, p=(legal_actions / legal_actions.sum())
+  )[0]
+
+  # Take action in environment
+  obs, reward, done, truncated, _ = env.step(action)
+  cum_reward += reward
 ```
 
 ### Important: Your instance must follow [Taillard's specification](http://jobshop.jjvh.nl/explanation.php#taillard_def). 
@@ -103,7 +104,7 @@ The package includes common dispatching rules for job shop scheduling that can b
 ```python
 import gymnasium as gym
 import JSSEnv
-from JSSEnv.dispatching import get_rule, compare_rules
+from src.JSSEnv.dispatching import get_rule, compare_rules
 
 # Create environment
 env = gym.make('jss-v1', env_config={'instance_path': 'PATH_TO_INSTANCE'})
@@ -117,12 +118,12 @@ done = False
 total_reward = 0
 
 while not done:
-    # The rule selects an action based on the current environment state
-    action = spt_rule(env)
-    
-    # Take the action in the environment
-    obs, reward, done, truncated, _ = env.step(action)
-    total_reward += reward
+  # The rule selects an action based on the current environment state
+  action = spt_rule(env)
+
+  # Take the action in the environment
+  obs, reward, done, truncated, _ = env.step(action)
+  total_reward += reward
 
 print(f"Makespan: {env.current_time_step}, Total reward: {total_reward}")
 

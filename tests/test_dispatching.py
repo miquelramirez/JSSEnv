@@ -8,17 +8,12 @@ import numpy as np
 from pathlib import Path
 
 import JSSEnv
-from JSSEnv.dispatching import (
+from src.JSSEnv.dispatching import (
     DISPATCHING_RULES,
     get_rule,
     compare_rules,
     ShortestProcessingTime,
-    FirstInFirstOut,
-    MostWorkRemaining,
-    LeastWorkRemaining,
-    MostOperationsRemaining,
-    LeastOperationsRemaining,
-    CriticalRatio
+    FirstInFirstOut
 )
 
 

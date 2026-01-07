@@ -15,7 +15,7 @@ This module implements common dispatching rules used in Job Shop Scheduling:
 from typing import Callable, Dict, List, Tuple, Union, Any, Optional
 import numpy as np
 
-from JSSEnv.envs.jss_env import JssEnv
+from src.JSSEnv.envs.jss_env import JssEnv
 
 
 class DispatchingRule:

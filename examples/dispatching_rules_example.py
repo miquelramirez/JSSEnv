@@ -18,7 +18,7 @@ import numpy as np
 import pandas as pd
 import gymnasium as gym
 import JSSEnv
-from JSSEnv.dispatching import DISPATCHING_RULES, compare_rules
+from src.JSSEnv.dispatching import DISPATCHING_RULES, compare_rules
 
 from pathlib import Path
 
