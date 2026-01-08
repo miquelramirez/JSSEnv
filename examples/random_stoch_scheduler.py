@@ -32,6 +32,7 @@ def eval_random_policy(instance: str, n: int) -> int:
         logging.info(f"Action at time {t}: {action}")
         obs, info, r, done, _ = env.step(action)
         G += r
+        t += 1
 
 
     logging.info(f"Trial ended, random policy value: {G}")
@@ -45,10 +46,12 @@ def process_command_line() -> Namespace:
     return parser.parse_args()
 
 def main(opt: Namespace) -> None:
-    logging.basicConfig(level=logging.DEBUG, filename='./logs/stochastic_scheduling/random_policy.log')
-    for i in range(opt.trials):
-        G_0: int = eval_random_policy(opt.instance, prime(i+1))
-        print(f"Trial {i+1} cost: {G_0}")
+    logging.basicConfig(level=logging.DEBUG,
+                        filename='./logs/stochastic_scheduling/random_policy.log',
+                        filemode='w')
+    for i in range(1, opt.trials+1):
+        G_0: int = eval_random_policy(opt.instance, prime(i))
+        print(f"Trial {i} cost: {G_0}")
 
 if __name__ == "__main__":
     main(process_command_line())

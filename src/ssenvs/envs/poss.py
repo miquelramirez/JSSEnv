@@ -95,28 +95,47 @@ class StochasticEnv(gym.Env):
         self.current_time_step += 1
 
         if self.current_time_step == self.t_max:
+            logging.debug(f"End of service interval reached.")
             self.trace.append(self._get_obs())
             return self.trace[-1], self._get_info(), self._get_reward(), True, False
 
         # Updated working set
+        logging.debug(f"Updating working set: {self.working}")
         next_working: set[tuple[int, int]] = set()
         for j, i in self.working:
+            logging.info(f"Checking status of job {j} being processed by machine {i}")
             if self.current_time_step > self.deadlines[j]:
                 self.failed.add(j)
+                self.idle.add(i)
                 self.elapsed[j] = 0
+                logging.info(f"Job {j} FAILS: current time: {self.current_time_step}, deadline: {self.deadlines[j]}")
             else:
                 if self.elapsed[j] == self.instance.process_times[j, i]:
+                    logging.info(f"Job {j} COMPLETED at machine {i}: current time: {self.current_time_step}, deadline: {self.elapsed[j]}")
                     self.completed.add(j)
+                    self.idle.add(i)
                     self.elapsed[j] = 0
                 else:
-                    if self.np_random.random() > self.instance.process_probs[j, i]:
+                    v_ji = self.np_random.random()
+                    q_ji = self.instance.process_probs[j, i]
+                    logging.info(f"Test for job {j} processing abortion at machine {i}: disturbance: {v_ji}, probability: {q_ji}")
+                    if v_ji < q_ji:
+                        logging.info(f"Job {j} ABORTED at machine {i}: current time: {self.current_time_step}, deadline: {self.deadlines[j]}")
                         self.pending.add(j)
+                        self.idle.add(i)
                         self.elapsed[j] = 0
+                    else:
+                        logging.info(f"Job {j} ON TRACK at machine {i}: current time: {self.current_time_step}, deadline: {self.deadlines[j]}")
+                        self.elapsed[j] += 1
+                        next_working.add((j, i))
         for j, i in action:
             next_working.add((j, i))
             self.elapsed[j] = 1
             self.idle.remove(i)
             self.pending.remove(j)
+            logging.debug(f"Adding new entry to working set: job={j}, machine={i}")
+        logging.debug(f"Next working set: {next_working}")
+        logging.debug(f"Elapsed time: {self.elapsed}")
         self.working = next_working
 
         next_pending: set[int] = set()
@@ -161,7 +180,8 @@ class StochasticEnv(gym.Env):
                     jobs_deadlines={j: self.deadlines[j] for j in self.pending},)
 
     def _get_info(self) -> InfoType:
-        return dict(t=self.current_time_step,)
+        return dict(t=self.current_time_step,
+                    elapsed=self.elapsed,)
 
     def _choose_release_and_deadline_times(self) -> None:
         """

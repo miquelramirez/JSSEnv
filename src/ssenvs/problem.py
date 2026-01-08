@@ -22,7 +22,7 @@ class ProblemData(object):
                 if line_cnt == 1:
                     self.jobs, self.machines = split_data
                     self.process_times = np.zeros((self.jobs, self.machines), dtype=int)
-                    self.process_probs = 0.01*np.ones((self.jobs, self.machines))
+                    self.process_probs = 0.1*np.ones((self.jobs, self.machines))
                     self.jobs_min_length = 1e20*np.ones(self.jobs)
                     self.jobs_max_length = np.zeros(self.jobs)
                     self.job_weights = np.ones(self.jobs)
