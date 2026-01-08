@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=42", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["uv_build"]
+build-backend = "uv_build"
 
 [project]
 name = "ssenvs"

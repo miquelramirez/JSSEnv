@@ -1,1 +1,1 @@
-from src.ssenvs.envs.jss import JssEnv
+from ssenvs.envs.jss import JssEnv
