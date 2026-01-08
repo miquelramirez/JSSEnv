@@ -2,53 +2,34 @@ from pathlib import Path
 from typing import Any
 from dataclasses import dataclass
 import logging
+import copy
 
 import numpy as np
 
 import gymnasium as gym
 
 from ssenvs.problem import ProblemData
+from ssenvs.envs.poss import State, EnvSpecType, ObservationSpaceType, ActionSpaceType, InfoType
 
 logger = logging.getLogger(__name__)
 
-# Types
-EnvSpecType = dict[str, Any]
-ObservationSpaceType = dict[str, Any]
-ActionSpaceType = list[tuple[int,int]]
-InfoType = dict[str, Any]
-
-@dataclass
-class State(object):
-
-    machines: int
-    pending: set[int]
-    working: set[tuple[int, int]]
-    completed: set[int]
-    failed: set[int]
-    idle: set[int]
-
-
-class StochasticEnv(gym.Env):
+class PredictionEnv(gym.Env):
     """
     Stochastic Scheduling Environment
     """
     metadata = {'render.modes': []}
 
-    def __init__(self, spec: dict[str, Any] | None = None):
+    def __init__(self, spec: dict[str, Any]):
         """
         Initialize the environment
         """
-        self.spec: EnvSpecType | None = spec
-        if self.spec is None:
-            self.spec = dict(instance_path=Path(__file__).parent.absolute() / "instances" / "ta80")
-
-        self.instance = ProblemData(self.spec["instance_path"])
+        self.spec: EnvSpecType = spec
+        self.instance = ProblemData(self.spec["instance"])
 
         self.trace: list[ObservationSpaceType] = []
         self.current_time_step: int = 0
-        self.deadlines: np.ndarray = np.ones(self.instance.jobs, dtype=int)
-        self.releases: np.ndarray = np.zeros(self.instance.jobs, dtype=int)
-        self.elapsed: np.ndarray = np.zeros(self.instance.jobs, dtype=int)
+        self.deadlines: np.ndarray = spec.get('deadlines')
+        self.elapsed: np.ndarray = spec.get('elapsed')
         self.t_max: int | None = None
 
         self.completed: set[int] = set()
@@ -65,16 +46,24 @@ class StochasticEnv(gym.Env):
         Resets the environment to an initial internal state
         """
         super().reset(seed=seed, options=options)
-        self._choose_release_and_deadline_times()
 
-        self.completed = set()
-        self.failed = set()
-        self.working = set()
-        self.idle = set([i for i in range(0, self.instance.machines)])
+        if options is None:
+            raise ValueError(f"Prediction environment requires initial state to be provided as a "
+                             f"key in the options dictionary.")
+
+        s0: State = options.get('initial')
+
+        self.completed = copy.copy(s0.completed)
+        self.failed = copy.copy(s0.failed)
+        self.working = copy.copy(s0.working)
+        self.pending = copy.copy(s0.pending)
+        self.idle = copy.copy(s0.idle)
+        self.elapsed = copy.copy(options.get('elapsed'))
+        self.current_time_step = copy.copy(options.get('current_time_step'))
+        self.t_max = options.get('t_max')
+        self.deadlines = options.get('deadlines')
 
         # put all released jobs out
-        self.current_time_step = 0
-        self.pending = set([j for j in range(0, self.instance.jobs) if self.releases[j] == self.current_time_step])
 
         self.trace = [self._get_obs()]
 
@@ -145,10 +134,6 @@ class StochasticEnv(gym.Env):
                 self.elapsed[j] = 0
             else:
                 next_pending.add(j)
-        # Check releases
-        for j in range(self.instance.jobs):
-            if self.current_time_step == self.releases[j]:
-                next_pending.add(j)
         self.pending = next_pending
 
         self.trace.append(self._get_obs())
@@ -178,16 +163,5 @@ class StochasticEnv(gym.Env):
                     jobs_deadlines={j: self.deadlines[j] for j in self.pending},)
 
     def _get_info(self) -> InfoType:
-        return dict(current_time_step=self.current_time_step,
-                    elapsed=self.elapsed,
-                    t_max=self.t_max,)
-
-    def _choose_release_and_deadline_times(self) -> None:
-        """
-        Choose the release times
-        """
-
-        for j in range(self.instance.jobs):
-            self.releases[j] = self.np_random.integers(0, self.instance.max_time_jobs)
-            self.deadlines[j] = self.releases[j] + self.instance.jobs_max_length[j] * 2
-        self.t_max = max(self.deadlines)
+        return dict(t=self.current_time_step,
+                    elapsed=self.elapsed,)
