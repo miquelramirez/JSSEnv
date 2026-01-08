@@ -2,19 +2,20 @@ import gymnasium as gym
 import unittest
 import numpy as np
 from pathlib import Path
-
+import JSSEnv.envs
+import JSSEnv.envs.instances as jsslib
 
 class TestState(unittest.TestCase):
     def test_random(self):
         env = gym.make(
             "jss-v1",
             env_config={
-                "instance_path": f"{str(Path(__file__).parent.absolute())}/../JSSEnv/envs/instances/ta01"
+                "instance_path": jsslib.get_path() / "ta01"
             },
-        )
+        ).unwrapped
         average = 0
         for _ in range(100):
-            state = env.reset()
+            state, info = env.reset()
             self.assertEqual(env.current_time_step, 0)
             legal_actions = env.get_legal_actions()
             done = False

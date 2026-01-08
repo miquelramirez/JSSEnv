@@ -1,7 +1,7 @@
 import gymnasium as gym
 import unittest
 from pathlib import Path
-
+import JSSEnv.envs.instances as jsslib
 
 class TestSolution(unittest.TestCase):
     def test_optimum_ta01(self):
@@ -9,9 +9,9 @@ class TestSolution(unittest.TestCase):
         env = gym.make(
             "jss-v1",
             env_config={
-                "instance_path": f"{str(Path(__file__).parent.absolute())}/../JSSEnv/envs/instances/ta01"
+                "instance_path": jsslib.get_path() / "ta01"
             },
-        )
+        ).unwrapped
         env.reset()
         self.assertEqual(env.current_time_step, 0)
         # for every machine give the jobs to process in order for every machine
@@ -80,9 +80,9 @@ class TestSolution(unittest.TestCase):
         env = gym.make(
             "jss-v1",
             env_config={
-                "instance_path": f"{str(Path(__file__).parent.absolute())}/../JSSEnv/envs/instances/ta41"
+                "instance_path": jsslib.get_path() / "ta41"
             },
-        )
+        ).unwrapped
         env.reset()
         self.assertEqual(env.current_time_step, 0)
         # for every machine give the jobs to process in order for every machine
@@ -776,9 +776,9 @@ class TestSolution(unittest.TestCase):
         env = gym.make(
             "jss-v1",
             env_config={
-                "instance_path": f"{str(Path(__file__).parent.absolute())}/../JSSEnv/envs/instances/ta42"
+                "instance_path": jsslib.get_path() / "ta42"
             },
-        )
+        ).unwrapped
         env.reset()
         self.assertEqual(env.current_time_step, 0)
         # for every machine give the jobs to process in order for every machine
@@ -1472,9 +1472,9 @@ class TestSolution(unittest.TestCase):
         env = gym.make(
             "jss-v1",
             env_config={
-                "instance_path": f"{str(Path(__file__).parent.absolute())}/../JSSEnv/envs/instances/ta43"
+                "instance_path": jsslib.get_path() / "ta43"
             },
-        )
+        ).unwrapped
         env.reset()
         self.assertEqual(env.current_time_step, 0)
         # for every machine give the jobs to process in order for every machine
@@ -2168,9 +2168,9 @@ class TestSolution(unittest.TestCase):
         env = gym.make(
             "jss-v1",
             env_config={
-                "instance_path": f"{str(Path(__file__).parent.absolute())}/../JSSEnv/envs/instances/ta44"
+                "instance_path": jsslib.get_path() / "ta44"
             },
-        )
+        ).unwrapped
         env.reset()
         self.assertEqual(env.current_time_step, 0)
         # for every machine give the jobs to process in order for every machine
@@ -2864,9 +2864,9 @@ class TestSolution(unittest.TestCase):
         env = gym.make(
             "jss-v1",
             env_config={
-                "instance_path": f"{str(Path(__file__).parent.absolute())}/../JSSEnv/envs/instances/ta45"
+                "instance_path": jsslib.get_path() / "ta45"
             },
-        )
+        ).unwrapped
         env.reset()
         self.assertEqual(env.current_time_step, 0)
         # for every machine give the jobs to process in order for every machine
@@ -3560,9 +3560,9 @@ class TestSolution(unittest.TestCase):
         env = gym.make(
             "jss-v1",
             env_config={
-                "instance_path": f"{str(Path(__file__).parent.absolute())}/../JSSEnv/envs/instances/ta46"
+                "instance_path": jsslib.get_path() / "ta46"
             },
-        )
+        ).unwrapped
         env.reset()
         self.assertEqual(env.current_time_step, 0)
         # for every machine give the jobs to process in order for every machine
@@ -4256,9 +4256,9 @@ class TestSolution(unittest.TestCase):
         env = gym.make(
             "jss-v1",
             env_config={
-                "instance_path": f"{str(Path(__file__).parent.absolute())}/../JSSEnv/envs/instances/ta47"
+                "instance_path": jsslib.get_path() / "ta47"
             },
-        )
+        ).unwrapped
         env.reset()
         self.assertEqual(env.current_time_step, 0)
         # for every machine give the jobs to process in order for every machine
@@ -4952,9 +4952,9 @@ class TestSolution(unittest.TestCase):
         env = gym.make(
             "jss-v1",
             env_config={
-                "instance_path": f"{str(Path(__file__).parent.absolute())}/../JSSEnv/envs/instances/ta48"
+                "instance_path": jsslib.get_path() / "ta48"
             },
-        )
+        ).unwrapped
         env.reset()
         self.assertEqual(env.current_time_step, 0)
         # for every machine give the jobs to process in order for every machine
@@ -5648,9 +5648,9 @@ class TestSolution(unittest.TestCase):
         env = gym.make(
             "jss-v1",
             env_config={
-                "instance_path": f"{str(Path(__file__).parent.absolute())}/../JSSEnv/envs/instances/ta49"
+                "instance_path": jsslib.get_path() / "ta49"
             },
-        )
+        ).unwrapped
         env.reset()
         self.assertEqual(env.current_time_step, 0)
         # for every machine give the jobs to process in order for every machine
@@ -6344,9 +6344,9 @@ class TestSolution(unittest.TestCase):
         env = gym.make(
             "jss-v1",
             env_config={
-                "instance_path": f"{str(Path(__file__).parent.absolute())}/../JSSEnv/envs/instances/ta50"
+                "instance_path": jsslib.get_path() / "ta50"
             },
-        )
+        ).unwrapped
         env.reset()
         self.assertEqual(env.current_time_step, 0)
         # for every machine give the jobs to process in order for every machine
@@ -7039,9 +7039,9 @@ class TestSolution(unittest.TestCase):
         env = gym.make(
             "jss-v1",
             env_config={
-                "instance_path": f"{str(Path(__file__).parent.absolute())}/../JSSEnv/envs/instances/ta51"
+                "instance_path": jsslib.get_path() / "ta51"
             },
-        )
+        ).unwrapped
         env.reset()
         self.assertEqual(env.current_time_step, 0)
         # for every machine give the jobs to process in order for every machine

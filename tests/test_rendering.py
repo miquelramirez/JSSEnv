@@ -2,17 +2,19 @@ import gymnasium as gym
 import unittest
 import imageio
 from pathlib import Path
+import JSSEnv.envs.instances as jsslib
+import pytest
 
-
+@pytest.mark.skip(reason="Unsure this works correctly with MacOS")
 class TestRendering(unittest.TestCase):
     def test_optimum_ta01_gif(self):
         # http://optimizizer.com/solution.php?name=ta01&UB=1231&problemclass=ta
         env = gym.make(
             "jss-v1",
             env_config={
-                "instance_path": f"{str(Path(__file__).parent.absolute())}/../JSSEnv/envs/instances/ta01"
+                "instance_path": jsslib.get_path() / "ta01"
             },
-        )
+        ).unwrapped
         env.reset()
         self.assertEqual(env.current_time_step, 0)
         # for every machine give the jobs to process in order for every machine

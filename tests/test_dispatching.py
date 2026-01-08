@@ -15,15 +15,15 @@ from src.JSSEnv.dispatching import (
     ShortestProcessingTime,
     FirstInFirstOut
 )
-
+import JSSEnv.envs.instances as jsslib
 
 class TestDispatchingRules(unittest.TestCase):
     """Test the dispatching rules functionality."""
     
     def setUp(self):
         """Set up a test environment."""
-        instance_path = f"{str(Path(__file__).parent.absolute())}/../JSSEnv/envs/instances/ta01"
-        self.env = gym.make('jss-v1', env_config={"instance_path": instance_path})
+        instance_path = jsslib.get_path() / "ta01"
+        self.env = gym.make('jss-v1', env_config={"instance_path": instance_path}).unwrapped
     
     def test_rule_initialization(self):
         """Test that all rules can be initialized."""
