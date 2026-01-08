@@ -1,5 +1,5 @@
-import JSSEnv.envs.instances as jsslib
-import JSSEnv.problem as io
+import ssenvs.envs.instances as jsslib
+import ssenvs.problem as io
 
 def test_load_ta_01() -> None:
 

@@ -16,7 +16,7 @@ else:
     PANDAS_REQUIREMENT = "pandas>=1.3.0,<2.0.0"
 
 setup(
-    name="JSSEnv",
+    name="ssenvs",
     version="1.1.0",
     author="Pierre Tassel",
     author_email="pierre.tassel@aau.at",

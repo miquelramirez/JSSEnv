@@ -13,6 +13,7 @@ class ProblemData(object):
         self.process_probs: np.ndarray | None = None
         self.jobs_min_length: np.ndarray | None = None
         self.jobs_max_length: np.ndarray | None = None
+        self.job_weights: np.ndarray | None = None
 
         with open(self.instance_path) as instance_file:
             for line_cnt, line_str in enumerate(instance_file, start=1):
@@ -24,6 +25,7 @@ class ProblemData(object):
                     self.process_probs = 0.01*np.ones((self.jobs, self.machines))
                     self.jobs_min_length = 1e20*np.ones(self.jobs)
                     self.jobs_max_length = np.zeros(self.jobs)
+                    self.job_weights = np.ones(self.jobs)
                 else:
                     assert len(split_data) % 2 == 0 and len(split_data) // 2 == self.machines
                     job_nb = line_cnt - 2

@@ -5,5 +5,5 @@ from gymnasium.envs.registration import register
 
 register(
     id="jss-v1",
-    entry_point="JSSEnv.envs:JssEnv",
+    entry_point="ssenvs.envs:JssEnv",
 )

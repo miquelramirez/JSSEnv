@@ -7,7 +7,7 @@ registry = EnvRegistry()
 
 def register(id: str, **kwargs: Any) -> None:
     """
-    Register an environment with the JSSEnv registry.
+    Register an environment with the ssenvs registry.
     
     Args:
         id: Unique identifier for the environment

@@ -1,7 +1,7 @@
 import gymnasium as gym
 import unittest
 from pathlib import Path
-import JSSEnv.envs.instances as jsslib
+import ssenvs.envs.instances as jsslib
 
 class TestSolution(unittest.TestCase):
     def test_optimum_ta01(self):

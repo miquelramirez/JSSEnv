@@ -53,7 +53,7 @@ def create_env(config: Union[Dict[str, Any], str], *args: Any, **kwargs: Any) ->
         env_name = config
         
     if env_name == "jss-v1":
-        from src.JSSEnv.envs.jss_env import JssEnv as env
+        from src.ssenvs.envs.jss import JssEnv as env
     else:
         raise NotImplementedError(f"Environment {env_name} not recognized.")
         

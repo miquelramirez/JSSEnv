@@ -35,7 +35,7 @@ pytest
 With coverage:
 
 ```bash
-pytest --cov=JSSEnv tests/
+pytest --cov=ssenvs tests/
 ```
 
 ### Pull Requests

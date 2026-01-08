@@ -7,15 +7,15 @@ import gymnasium as gym
 import numpy as np
 from pathlib import Path
 
-import JSSEnv
-from src.JSSEnv.dispatching import (
+import ssenvs
+from src.ssenvs.dispatching import (
     DISPATCHING_RULES,
     get_rule,
     compare_rules,
     ShortestProcessingTime,
     FirstInFirstOut
 )
-import JSSEnv.envs.instances as jsslib
+import ssenvs.envs.instances as jsslib
 
 class TestDispatchingRules(unittest.TestCase):
     """Test the dispatching rules functionality."""

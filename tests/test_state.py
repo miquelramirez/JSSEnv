@@ -2,8 +2,8 @@ import gymnasium as gym
 import unittest
 import numpy as np
 from pathlib import Path
-import JSSEnv.envs
-import JSSEnv.envs.instances as jsslib
+import ssenvs.envs
+import ssenvs.envs.instances as jsslib
 
 class TestState(unittest.TestCase):
     def test_random(self):

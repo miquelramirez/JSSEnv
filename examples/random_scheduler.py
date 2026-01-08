@@ -2,8 +2,8 @@ from pathlib import Path
 import numpy as np
 
 import gymnasium as gym
-import JSSEnv
-import JSSEnv.envs.instances as jsslib
+import ssenvs
+import ssenvs.envs.instances as jsslib
 
 def main() -> None:
     """

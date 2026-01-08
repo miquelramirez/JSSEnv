@@ -25,7 +25,7 @@ This repository is available as a pip package:
 
 ```shell
 # Install the package
-pip install JSSEnv
+pip install ssenvs
 
 # For development installation with test dependencies
 pip install -e ".[dev]"
@@ -42,7 +42,7 @@ Once installed, the environment will be available in your OpenAi's gym environme
 
 ```python
 import gymnasium as gym
-from src import JSSEnv
+from src import ssenvs
 
 env = gym.make('jss-v1', env_config={'instance_path': 'INSTANCE_PATH'})
 
@@ -103,8 +103,8 @@ The package includes common dispatching rules for job shop scheduling that can b
 
 ```python
 import gymnasium as gym
-import JSSEnv
-from src.JSSEnv.dispatching import get_rule, compare_rules
+import ssenvs
+from src.ssenvs.dispatching import get_rule, compare_rules
 
 # Create environment
 env = gym.make('jss-v1', env_config={'instance_path': 'PATH_TO_INSTANCE'})
@@ -162,7 +162,7 @@ To create animated GIFs of your schedules like the one shown at the top of this 
 
 ```python
 import gymnasium as gym
-import JSSEnv
+import ssenvs
 import imageio
 
 # Create environment
@@ -175,15 +175,15 @@ images = []
 # Run your scheduling algorithm
 done = False
 while not done:
-    # Your scheduling logic to choose an action
-    action = your_scheduling_algorithm(env)
-    
-    # Take the action
-    obs, reward, done, truncated, _ = env.step(action)
-    
-    # Render and capture the current state as an image
-    temp_image = env.render().to_image()
-    images.append(imageio.imread(temp_image))
+  # Your scheduling logic to choose an action
+  action = your_scheduling_algorithm(env)
+
+  # Take the action
+  obs, reward, done, truncated, _ = env.step(action)
+
+  # Render and capture the current state as an image
+  temp_image = env.render().to_image()
+  images.append(imageio.imread(temp_image))
 
 # Save the images as an animated GIF
 imageio.mimsave("schedule.gif", images)

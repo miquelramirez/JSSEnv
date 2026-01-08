@@ -17,8 +17,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import gymnasium as gym
-import JSSEnv
-from src.JSSEnv.dispatching import DISPATCHING_RULES, compare_rules
+import ssenvs
+from src.ssenvs.dispatching import DISPATCHING_RULES, compare_rules
 
 from pathlib import Path
 
@@ -27,7 +27,7 @@ def run_example(instance_path=None):
     """Run the dispatching rules example on the given instance."""
     if instance_path is None:
         # Use default instance
-        instance_path = str(Path(__file__).parent.parent / "JSSEnv" / "envs" / "instances" / "ta01")
+        instance_path = str(Path(__file__).parent.parent / "ssenvs" / "envs" / "instances" / "ta01")
     
     print(f"Running dispatching rules example on instance: {instance_path}")
     

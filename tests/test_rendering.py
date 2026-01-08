@@ -2,7 +2,7 @@ import gymnasium as gym
 import unittest
 import imageio
 from pathlib import Path
-import JSSEnv.envs.instances as jsslib
+import ssenvs.envs.instances as jsslib
 import pytest
 
 @pytest.mark.skip(reason="Unsure this works correctly with MacOS")
