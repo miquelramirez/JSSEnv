@@ -19,6 +19,8 @@ def process_command_line() -> Namespace:
     parser = ArgumentParser()
     parser.add_argument("-N", "--trials", type=int, help="Number of trials", default=10)
     parser.add_argument("-i", "--instance", type=str, default="ta01", help="Instance name")
+    parser.add_argument("-a", "--super_arms", type=int, default=5, help="Number of super arms for Explore Than Commit bandit")
+    parser.add_argument("-r", "--rollouts", type=int, default=1, help="Number of rollouts to collect to calculate super arm mean")
 
     return parser.parse_args()
 
@@ -62,7 +64,7 @@ def rollout(pred_env: PredictionEnv, a0: list[tuple[int, int]], rng: Generator) 
 
     return G
 
-def eval_mc_rollout(instance: str, seed: int) -> float:
+def eval_mc_rollout(instance: str, seed: int, super_arms: int, rollouts: int) -> float:
     """
 
     """
@@ -87,18 +89,21 @@ def eval_mc_rollout(instance: str, seed: int) -> float:
 
         Q_t: dict[tuple, float] = {}
 
-        for k in range(5):
+        for k in range(super_arms):
             a_0 = select_action(pending, idle, policy_rng)
 
             #logging.info(f"First action in rollout, time {t}: {a_0}")
-            # Start rollout
-            pred_env.reset(seed=cseed,
-                           options=dict(initial=obs.get('state'),
-                                        elapsed=env.elapsed,
-                                        deadlines=env.deadlines,
-                                        current_time_step=env.current_time_step,
-                                        t_max=env.t_max,))
-            Q_for_a_0 = rollout(pred_env, a_0, policy_rng)
+            # Start rollouts
+            Q_for_a_0_samples = []
+            for roll in range(rollouts):
+                pred_env.reset(seed=cseed,
+                            options=dict(initial=obs.get('state'),
+                                            elapsed=env.elapsed,
+                                            deadlines=env.deadlines,
+                                            current_time_step=env.current_time_step,
+                                            t_max=env.t_max,))
+                Q_for_a_0_samples.append(rollout(pred_env, a_0, policy_rng))
+            Q_for_a_0 = np.mean(Q_for_a_0_samples)
             a_0_as_tuple = tuple(a_0)
             if a_0_as_tuple in Q_t:
                 Q_t[a_0_as_tuple] = max(Q_t[a_0_as_tuple], Q_for_a_0)
@@ -128,7 +133,7 @@ def main(opt: Namespace) -> None:
                         filemode='w')
     for i in range(1, opt.trials+1):
         logging.info(f"Starting trial #{i}")
-        G_0: int = eval_mc_rollout(opt.instance, prime(i))
+        G_0: int = eval_mc_rollout(opt.instance, prime(i), opt.super_arms, opt.rollouts)
         print(f"Trial {i} cost: {G_0}")
         logging.info(f"Trial ended, mc policy value: {G_0}")
 
