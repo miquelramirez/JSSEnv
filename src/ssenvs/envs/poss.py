@@ -189,5 +189,5 @@ class StochasticEnv(gym.Env):
 
         for j in range(self.instance.jobs):
             self.releases[j] = self.np_random.integers(0, self.instance.max_time_jobs)
-            self.deadlines[j] = self.releases[j] + self.instance.jobs_max_length[j] * 2
+            self.deadlines[j] = self.releases[j] + self.instance.job_deadlines[j]
         self.t_max = max(self.deadlines)

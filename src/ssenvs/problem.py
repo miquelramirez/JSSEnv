@@ -2,6 +2,8 @@ from pathlib import Path
 import numpy as np
 
 class ProblemData(object):
+    job_failure_rate: float = 0.1
+    job_deadline_multiplier: int = 2
 
     def __init__(self, data: Path):
         self.instance_path = Path(data)
@@ -14,6 +16,7 @@ class ProblemData(object):
         self.jobs_min_length: np.ndarray | None = None
         self.jobs_max_length: np.ndarray | None = None
         self.job_weights: np.ndarray | None = None
+        self.job_deadlines: np.ndarray | None = None
 
         with open(self.instance_path) as instance_file:
             for line_cnt, line_str in enumerate(instance_file, start=1):
@@ -22,10 +25,11 @@ class ProblemData(object):
                 if line_cnt == 1:
                     self.jobs, self.machines = split_data
                     self.process_times = np.zeros((self.jobs, self.machines), dtype=int)
-                    self.process_probs = 0.1*np.ones((self.jobs, self.machines))
+                    self.process_probs = ProblemData.job_failure_rate*np.ones((self.jobs, self.machines))
                     self.jobs_min_length = 1e20*np.ones(self.jobs)
                     self.jobs_max_length = np.zeros(self.jobs)
                     self.job_weights = np.ones(self.jobs)
+                    self.job_deadlines = np.ones(self.jobs)
                 else:
                     assert len(split_data) % 2 == 0 and len(split_data) // 2 == self.machines
                     job_nb = line_cnt - 2
@@ -36,6 +40,7 @@ class ProblemData(object):
                             self.process_probs[job_nb, machine] = 1.0
                         self.jobs_min_length[job_nb] = min(self.jobs_min_length[job_nb], int(time))
                         self.jobs_max_length[job_nb] = max(self.jobs_max_length[job_nb], int(time))
+                    self.job_deadlines[job_nb] = ProblemData.job_deadline_multiplier * self.jobs_max_length[job_nb]
 
         self.max_time_jobs = max(self.jobs_max_length)
         # Check Problem data correctness
