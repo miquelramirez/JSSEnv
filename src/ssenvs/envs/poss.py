@@ -118,7 +118,7 @@ class StochasticEnv(gym.Env):
                     v_ji = self.np_random.random()
                     q_ji = self.instance.process_probs[j, i]
                     logging.debug(f"Test for job {j} processing abortion at machine {i}: disturbance: {v_ji}, probability: {q_ji}")
-                    if v_ji < q_ji:
+                    if v_ji > q_ji:
                         logging.debug(f"Job {j} ABORTED at machine {i}: current time: {self.current_time_step}, deadline: {self.deadlines[j]}")
                         self.pending.add(j)
                         self.idle.add(i)
@@ -131,7 +131,7 @@ class StochasticEnv(gym.Env):
             v_ji = self.np_random.random()
             q_ji = self.instance.process_probs[j, i]
             logging.debug(f"Test for job {j} successfully starts processing at machine {i}: disturbance: {v_ji}, probability: {q_ji}")
-            if v_ji < q_ji:
+            if v_ji > q_ji:
                 logging.debug(f"Job {j} ABORTED upon starting at machine {i}: current time: {self.current_time_step}, deadline: {self.deadlines[j]}")
             else:
                 next_working.add((j, i))
