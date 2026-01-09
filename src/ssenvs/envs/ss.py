@@ -28,8 +28,8 @@ class PredictionEnv(gym.Env):
 
         self.trace: list[ObservationSpaceType] = []
         self.current_time_step: int = 0
-        self.deadlines: np.ndarray = spec.get('deadlines')
-        self.elapsed: np.ndarray = spec.get('elapsed')
+        self.deadlines: np.ndarray | None = None
+        self.elapsed: np.ndarray | None = None
         self.t_max: int | None = None
 
         self.completed: set[int] = set()
@@ -58,10 +58,10 @@ class PredictionEnv(gym.Env):
         self.working = copy.copy(s0.working)
         self.pending = copy.copy(s0.pending)
         self.idle = copy.copy(s0.idle)
-        self.elapsed = copy.copy(options.get('elapsed'))
-        self.current_time_step = copy.copy(options.get('current_time_step'))
-        self.t_max = options.get('t_max')
-        self.deadlines = options.get('deadlines')
+        self.elapsed = copy.copy(options['elapsed'])
+        self.current_time_step = options['current_time_step']
+        self.t_max = options['t_max']
+        self.deadlines = options['deadlines']
 
         # put all released jobs out
 
@@ -82,8 +82,8 @@ class PredictionEnv(gym.Env):
 
         self.current_time_step += 1
 
-        if self.current_time_step == self.t_max:
-            logging.debug(f"End of service interval reached.")
+        if len(self.pending) == 0 and len(self.working) == 0:
+            logging.debug(f"Done with rollout")
             self.trace.append(self._get_obs())
             return self.trace[-1], self._get_info(), self._get_reward(), True, False
 
