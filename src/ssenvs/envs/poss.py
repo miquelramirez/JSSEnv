@@ -102,37 +102,43 @@ class StochasticEnv(gym.Env):
         logging.debug(f"Updating working set: {self.working}")
         next_working: set[tuple[int, int]] = set()
         for j, i in self.working:
-            logging.info(f"Checking status of job {j} being processed by machine {i}")
+            logging.debug(f"Checking status of job {j} being processed by machine {i}")
             if self.current_time_step > self.deadlines[j]:
                 self.failed.add(j)
                 self.idle.add(i)
                 self.elapsed[j] = 0
-                logging.info(f"Job {j} FAILS: current time: {self.current_time_step}, deadline: {self.deadlines[j]}")
+                logging.debug(f"Job {j} FAILS: current time: {self.current_time_step}, deadline: {self.deadlines[j]}")
             else:
-                if self.elapsed[j] == self.instance.process_times[j, i]:
-                    logging.info(f"Job {j} COMPLETED at machine {i}: current time: {self.current_time_step}, deadline: {self.elapsed[j]}")
+                if self.elapsed[j] > self.instance.process_times[j, i]:
+                    logging.debug(f"Job {j} COMPLETED at machine {i}: current time: {self.current_time_step}, deadline: {self.elapsed[j]}")
                     self.completed.add(j)
                     self.idle.add(i)
                     self.elapsed[j] = 0
                 else:
                     v_ji = self.np_random.random()
                     q_ji = self.instance.process_probs[j, i]
-                    logging.info(f"Test for job {j} processing abortion at machine {i}: disturbance: {v_ji}, probability: {q_ji}")
+                    logging.debug(f"Test for job {j} processing abortion at machine {i}: disturbance: {v_ji}, probability: {q_ji}")
                     if v_ji < q_ji:
-                        logging.info(f"Job {j} ABORTED at machine {i}: current time: {self.current_time_step}, deadline: {self.deadlines[j]}")
+                        logging.debug(f"Job {j} ABORTED at machine {i}: current time: {self.current_time_step}, deadline: {self.deadlines[j]}")
                         self.pending.add(j)
                         self.idle.add(i)
                         self.elapsed[j] = 0
                     else:
-                        logging.info(f"Job {j} ON TRACK at machine {i}: current time: {self.current_time_step}, deadline: {self.deadlines[j]}")
+                        logging.debug(f"Job {j} ON TRACK at machine {i}: current time: {self.current_time_step}, deadline: {self.deadlines[j]}")
                         self.elapsed[j] += 1
                         next_working.add((j, i))
         for j, i in action:
-            next_working.add((j, i))
-            self.elapsed[j] = 1
-            self.idle.remove(i)
-            self.pending.remove(j)
-            logging.debug(f"Adding new entry to working set: job={j}, machine={i}")
+            v_ji = self.np_random.random()
+            q_ji = self.instance.process_probs[j, i]
+            logging.debug(f"Test for job {j} successfully starts processing at machine {i}: disturbance: {v_ji}, probability: {q_ji}")
+            if v_ji < q_ji:
+                logging.debug(f"Job {j} ABORTED upon starting at machine {i}: current time: {self.current_time_step}, deadline: {self.deadlines[j]}")
+            else:
+                next_working.add((j, i))
+                self.elapsed[j] = 1
+                self.idle.remove(i)
+                self.pending.remove(j)
+                logging.debug(f"Adding new entry to working set: job={j}, machine={i}")
         logging.debug(f"Next working set: {next_working}")
         logging.debug(f"Elapsed time: {self.elapsed}")
         self.working = next_working
