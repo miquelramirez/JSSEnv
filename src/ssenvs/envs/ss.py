@@ -78,7 +78,7 @@ class PredictionEnv(gym.Env):
             if j not in self.pending:
                 raise ValueError(f"Invalid assignment: ({j}, {i}): Job {j} not in pending.")
             if i not in self.idle:
-                raise ValueError(f"Invalid assignment: ({j}, {i}): Job {j} not in idle.")
+                raise ValueError(f"Invalid assignment: ({j}, {i}): Machine {i} not in idle.")
 
         self.current_time_step += 1
 
