@@ -82,7 +82,7 @@ class PredictionEnv(gym.Env):
 
         self.current_time_step += 1
 
-        if len(self.pending) == 0 and len(self.working) == 0:
+        if self.current_time_step == self.t_max:
             logging.debug(f"Done with rollout")
             self.trace.append(self._get_obs())
             return self.trace[-1], self._get_info(), self._get_reward(), True, False
