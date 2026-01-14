@@ -39,6 +39,9 @@ class PredictionEnv(gym.Env):
         self.working: set[tuple[int, int]] = set()
         self.pending: set[int] = set()
 
+        self.feedback: dict[tuple[int, int], float] = {}
+
+
 
     def reset(self, seed: int | None = None,
               options: dict[str, Any] | None = None) -> tuple[ObservationSpaceType, InfoType]:
@@ -66,6 +69,7 @@ class PredictionEnv(gym.Env):
         # put all released jobs out
 
         self.trace = [self._get_obs()]
+        self.feedback = {}
 
         return self.trace[-1], self._get_info()
 
@@ -90,6 +94,8 @@ class PredictionEnv(gym.Env):
         # Updated working set
         logging.debug(f"Updating working set: {self.working}")
         next_working: set[tuple[int, int]] = set()
+        self.feedback = {}
+
         for j, i in self.working:
             logging.debug(f"Checking status of job {j} being processed by machine {i}")
             if self.current_time_step > self.deadlines[j]:
@@ -103,6 +109,7 @@ class PredictionEnv(gym.Env):
                     self.completed.add(j)
                     self.idle.add(i)
                     self.elapsed[j] = 0
+                    self.feedback[(j, i)] = 1.0 # note we are assuming unit weights
                 else:
                     v_ji = self.np_random.random()
                     q_ji = self.instance.process_probs[j, i]
@@ -170,4 +177,15 @@ class PredictionEnv(gym.Env):
 
     def _get_info(self) -> InfoType:
         return dict(t=self.current_time_step,
+                    feedback=self.feedback,
+                    arms=self._calc_available_arms(),
                     elapsed=self.elapsed,)
+
+    def _calc_available_arms(self) -> list[tuple[int, int]]:
+        applicable: list[tuple[int, int]] = []
+        for j in self.pending:
+            for i in self.idle:
+                if self.current_time_step + self.instance.process_times[j, i] < self.deadlines[j]:
+                    applicable.append((j, i))
+
+        return applicable
