@@ -58,6 +58,7 @@ class StochasticEnv(gym.Env):
         self.working: set[tuple[int, int]] = set()
         self.pending: set[int] = set()
 
+        self.feedback: dict[tuple[int, int], float] = {}
 
     def reset(self, seed: int | None = None,
               options: dict[str, Any] | None = None) -> tuple[ObservationSpaceType, InfoType]:
@@ -77,6 +78,7 @@ class StochasticEnv(gym.Env):
         self.pending = set([j for j in range(0, self.instance.jobs) if self.releases[j] == self.current_time_step])
 
         self.trace = [self._get_obs()]
+        self.feedback = dict()
 
         return self.trace[-1], self._get_info()
 
@@ -99,6 +101,7 @@ class StochasticEnv(gym.Env):
             return self.trace[-1], self._get_info(), self._get_reward(), True, False
 
         # Updated working set
+        self.feedback = {}
         logging.debug(f"Updating working set: {self.working}")
         next_working: set[tuple[int, int]] = set()
         for j, i in self.working:
@@ -113,6 +116,7 @@ class StochasticEnv(gym.Env):
                     logging.debug(f"Job {j} COMPLETED at machine {i}: current time: {self.current_time_step}, deadline: {self.elapsed[j]}")
                     self.completed.add(j)
                     self.idle.add(i)
+                    self.feedback[(j,i)] = 1.0
                     self.elapsed[j] = 0
                 else:
                     v_ji = self.np_random.random()
@@ -128,6 +132,8 @@ class StochasticEnv(gym.Env):
                         self.elapsed[j] += 1
                         next_working.add((j, i))
         for j, i in action:
+            assert j in self.pending
+            assert i in self.idle
             v_ji = self.np_random.random()
             q_ji = self.instance.process_probs[j, i]
             logging.debug(f"Test for job {j} successfully starts processing at machine {i}: disturbance: {v_ji}, probability: {q_ji}")
@@ -186,7 +192,18 @@ class StochasticEnv(gym.Env):
     def _get_info(self) -> InfoType:
         return dict(current_time_step=self.current_time_step,
                     elapsed=self.elapsed,
-                    t_max=self.t_max,)
+                    feedback=self.feedback,
+                    arms=self._calc_available_arms(),
+                    t_max=self.t_max, )
+
+    def _calc_available_arms(self) -> list[tuple[int, int]]:
+        applicable: list[tuple[int, int]] = []
+        for j in self.pending:
+            for i in self.idle:
+                if self.current_time_step + self.instance.process_times[j, i] < self.deadlines[j]:
+                    applicable.append((j, i))
+
+        return applicable
 
     def _choose_release_and_deadline_times(self) -> None:
         """
