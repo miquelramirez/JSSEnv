@@ -1,0 +1,40 @@
+{
+  "jobs": [
+    {
+      "release": [0, 20],
+      "deadline": 60,
+      "weight": 1
+    },
+    {
+      "release": [5, 10],
+      "deadline": 25,
+      "weight": 1
+    },
+    {
+      "release": [10, 20],
+      "deadline": 45,
+      "weight": 1
+    },
+    {
+      "release": [0, 15],
+      "deadline": 80,
+      "weight": 1
+    },
+    {
+      "release": [0, 25],
+      "deadline": 40,
+      "weight": 1
+    }
+  ],
+  "machines": [
+    {
+      "times": [5, 3, 4, 5, 8],
+      "probs": [0.1, 0.1, 0.1, 0.1, 0.0]
+    },
+    {
+      "times": [3, 3, 3, 4, 4],
+      "probs": [0.05, 0.05, 0.1, 0.1, 0.1]
+    }
+  ]
+
+}

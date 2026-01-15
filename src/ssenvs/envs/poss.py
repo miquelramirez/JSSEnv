@@ -40,9 +40,12 @@ class StochasticEnv(gym.Env):
         """
         self.spec: EnvSpecType | None = spec
         if self.spec is None:
-            self.spec = dict(instance_path=Path(__file__).parent.absolute() / "instances" / "ta80")
+            self.spec = dict(instance_name="scen001.json")
 
-        self.instance = ProblemData(self.spec["instance_path"])
+        self.instance = ProblemData(Path(__file__).parent.absolute()
+                                            / "instances"
+                                            / "stochastic"
+                                            / f"{self.spec["instance_name"]}.json")
 
         self.trace: list[ObservationSpaceType] = []
         self.current_time_step: int = 0
@@ -211,6 +214,7 @@ class StochasticEnv(gym.Env):
         """
 
         for j in range(self.instance.jobs):
-            self.releases[j] = self.np_random.integers(0, self.instance.max_time_jobs)
+            z = self.np_random.integers(self.instance.job_releases_lo[j], self.instance.job_releases_hi[j] + 1)
+            self.releases[j] = z
             self.deadlines[j] = self.releases[j] + self.instance.job_deadlines[j]
         self.t_max = max(self.deadlines)

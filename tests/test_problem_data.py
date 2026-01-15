@@ -3,7 +3,7 @@ import ssenvs.problem as io
 
 def test_load_ta_01() -> None:
 
-    instance = io.ProblemData(jsslib.get_path() / "ta13")
+    instance = io.ProblemData(jsslib.get_path() / "stochastic" / "scen001.json")
     print(f"Jobs in instance: {instance.jobs}")
     print(f"Machines in instance: {instance.machines}")
     for j in range(instance.jobs):
