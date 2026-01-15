@@ -24,7 +24,10 @@ class PredictionEnv(gym.Env):
         Initialize the environment
         """
         self.spec: EnvSpecType = spec
-        self.instance = ProblemData(self.spec["instance"])
+        self.instance = ProblemData(Path(__file__).parent.absolute()
+                                            / "instances"
+                                            / "stochastic"
+                                            / f"{self.spec["instance_name"]}.json")
 
         self.trace: list[ObservationSpaceType] = []
         self.current_time_step: int = 0
