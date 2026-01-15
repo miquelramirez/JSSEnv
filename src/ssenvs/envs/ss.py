@@ -24,10 +24,15 @@ class PredictionEnv(gym.Env):
         Initialize the environment
         """
         self.spec: EnvSpecType = spec
-        self.instance = ProblemData(Path(__file__).parent.absolute()
-                                            / "instances"
-                                            / "stochastic"
-                                            / f"{self.spec["instance_name"]}.json")
+        if self.spec.get('instance_name') is not None:
+            self.instance = ProblemData(Path(__file__).parent.absolute()
+                                                / "instances"
+                                                / "stochastic"
+                                                / f"{self.spec["instance_name"]}.json")
+        elif self.spec.get('instance_path') is not None:
+            self.instance = ProblemData(self.spec['instance_path'])
+        else:
+            raise ValueError("Specification needs to either provide an instance name or a path")
 
         self.trace: list[ObservationSpaceType] = []
         self.current_time_step: int = 0
