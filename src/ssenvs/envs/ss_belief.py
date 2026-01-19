@@ -14,7 +14,7 @@ from ssenvs.envs.poss import State, EnvSpecType, ObservationSpaceType, ActionSpa
 from ssenvs.envs.probabilistic_job_model import Job, build_and_execute_dbn
 
 @dataclass
-class SimplifiedState(object):
+class BeliefState(object):
     machines: int
     jobs: dict[int, Job]
 
@@ -69,7 +69,7 @@ class PredictionEnv(gym.Env):
             raise ValueError(f"Prediction environment requires initial state to be provided as a "
                              f"key in the options dictionary.")
 
-        s0: SimplifiedState = options.get('initial')
+        s0: BeliefState = options.get('initial')
 
         self.active_jobs = copy.copy(s0.jobs)
 
@@ -141,7 +141,7 @@ class PredictionEnv(gym.Env):
         """
         Returns current state observation
         """
-        return dict(state=SimplifiedState(machines=self.instance.machines,
+        return dict(state=BeliefState(machines=self.instance.machines,
                                 jobs=self.active_jobs))
 
     def _get_info(self) -> InfoType:
