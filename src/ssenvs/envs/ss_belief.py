@@ -16,7 +16,7 @@ from ssenvs.envs.probabilistic_job_model import Job, build_and_execute_dbn
 @dataclass
 class SimplifiedState(object):
     machines: int
-    jobs: dict[int, dict]
+    jobs: dict[int, Job]
 
 logger = logging.getLogger(__name__)
 
@@ -69,40 +69,14 @@ class PredictionEnv(gym.Env):
             raise ValueError(f"Prediction environment requires initial state to be provided as a "
                              f"key in the options dictionary.")
 
-        s0: State = options.get('initial')
+        s0: SimplifiedState = options.get('initial')
 
-        self.completed = copy.copy(s0.completed) 
-        self.failed = copy.copy(s0.failed) 
-        self.working = copy.copy(s0.working) 
-        self.pending = copy.copy(s0.pending)
-        self.idle = copy.copy(s0.idle)
-        self.elapsed = copy.copy(options['elapsed'])
+        self.active_jobs = copy.copy(s0.active_jobs)
+
         self.current_time_step = options['current_time_step']
         self.t_max = options['t_max']
         self.deadlines = options['deadlines']
 
-        # TODO: Create probabilistic job representation
-        self.active_jobs = {}
-        for j in s0.pending:
-            self.active_jobs[j] = Job(
-                deadline = self.deadlines[j], 
-            )
-        for j, i in s0.working:
-            self.active_jobs[j] = Job(
-                deadline = self.deadlines[j], 
-                current_processes = [
-                    {
-                        "id": str(i), 
-                        "elapsed_time": self.elapsed_time[j], 
-                        "q_ij": self.instance.process_probs[j, i], 
-                        "p_ij": self.instance.process_times[j, i],
-                    }],
-                prior = {"C": 0.0, "P": 0.0, "F": 0.0, "W_%s,%i"%(i, self.elapsed_time[j] - 1): 1.0}
-            )
-
-        # put all released jobs out
-
-        # TODO: Modify observation space.
         self.trace = [self._get_obs()]
         self.feedback = {}
 
@@ -168,16 +142,12 @@ class PredictionEnv(gym.Env):
         Returns current state observation
         """
         return dict(state=SimplifiedState(machines=self.instance.machines,
-                                jobs={j: k.prior for j,k in self.active_jobs.items()}),
-                    jobs_proc_times={j: self.instance.process_times[j, :] for j in self.pending},
-                    jobs_probs={j: self.instance.process_probs[j, :] for j in self.pending},
-                    jobs_deadlines={j: self.deadlines[j] for j in self.pending},)
+                                jobs=self.active_jobs))
 
     def _get_info(self) -> InfoType:
         return dict(t=self.current_time_step,
                     feedback=self.feedback,
-                    arms=self._calc_available_arms(),
-                    elapsed=self.elapsed,)
+                    arms=self._calc_available_arms())
 
     def _calc_available_arms(self) -> list[tuple[int, int]]:
         applicable: list[tuple[int, int]] = []
