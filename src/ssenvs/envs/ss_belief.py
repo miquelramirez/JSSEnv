@@ -71,7 +71,7 @@ class PredictionEnv(gym.Env):
 
         s0: SimplifiedState = options.get('initial')
 
-        self.active_jobs = copy.copy(s0.active_jobs)
+        self.active_jobs = copy.copy(s0.jobs)
 
         self.current_time_step = options['current_time_step']
         self.t_max = options['t_max']
