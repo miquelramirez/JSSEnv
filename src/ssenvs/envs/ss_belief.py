@@ -9,9 +9,13 @@ import numpy as np
 import gymnasium as gym
 
 from ssenvs.problem import ProblemData
-from ssenvs.envs.poss import State, EnvSpecType, ObservationSpaceType, ActionSpaceType, InfoType
+from ssenvs.envs.poss import EnvSpecType, ObservationSpaceType, ActionSpaceType, InfoType
 
 from ssenvs.envs.probabilistic_job_model import Job, build_and_execute_dbn
+
+class State(object):
+    machines: int
+    jobs: dict[int, dict]
 
 logger = logging.getLogger(__name__)
 
@@ -163,11 +167,7 @@ class PredictionEnv(gym.Env):
         Returns current state observation
         """
         return dict(state=State(machines=self.instance.machines,
-                                pending=self.pending,
-                                completed=self.completed,
-                                working=self.working,
-                                failed=self.failed,
-                                idle=self.idle),
+                                jobs={j: k.prior for j,k in self.active_jobs.items()}),
                     jobs_proc_times={j: self.instance.process_times[j, :] for j in self.pending},
                     jobs_probs={j: self.instance.process_probs[j, :] for j in self.pending},
                     jobs_deadlines={j: self.deadlines[j] for j in self.pending},)
