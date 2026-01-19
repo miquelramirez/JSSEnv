@@ -13,6 +13,7 @@ from ssenvs.envs.poss import State, EnvSpecType, ObservationSpaceType, ActionSpa
 
 from ssenvs.envs.probabilistic_job_model import Job, build_and_execute_dbn
 
+@dataclass
 class SimplifiedState(object):
     machines: int
     jobs: dict[int, dict]
