@@ -108,7 +108,7 @@ class PredictionEnv(gym.Env):
         # Execute actions
         for j, i in action:
             logging.debug(f"Assign machine {i} to job {j}")
-            self.active_job[j].new_execution(
+            self.active_jobs[j].new_execution(
                 {
                     "idx": str(i), 
                     "elapsed_time": 0, 
