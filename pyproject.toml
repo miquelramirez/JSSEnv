@@ -31,6 +31,7 @@ dependencies = [
     "numpy>=1.24.4",
     "pandas>=2.0.3",
     "pandas-stubs>=2.3.3.251201",
+    "pgmpy",
     "plotly>=6.5.0",
     "pytest>=9.0.2",
     "rustworkx>=0.17.1",
@@ -56,6 +57,9 @@ include = ["JSSEnv*"]
 
 [tool.uv]
 package = true
+
+[tool.uv.sources]
+pgmpy = { git = "https://github.com/pgmpy/pgmpy.git", branch = "dev" }
 
 [pytest]
 log_cli= true
