@@ -98,7 +98,7 @@ def job_to_transition_matrix(job: Job):
         working_set = "W_%s,%i"%(proc["id"], proc["elapsed_time"])
         transition_matrix[state.index("P"), state.index("P")*2] = 1 - proc["q_ij"]
         transition_matrix[state.index(working_set), state.index("P")*2] = proc["q_ij"]
-        transition_matrix[state.index(working_set), state.index(working_set)*2] = 1.0
+        #transition_matrix[state.index(working_set), state.index(working_set)*2] = 1.0
         # Failure
         transition_matrix[state.index("F"), (state.index("P")*2)+1] = 1
     else:
