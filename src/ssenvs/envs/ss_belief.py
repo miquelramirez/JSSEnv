@@ -127,8 +127,8 @@ class PredictionEnv(gym.Env):
         Returns reward
         """
         completed_weights: int = 0
-        for j in self.completed:
-            completed_weights += self.instance.job_weights[j]
+        for j_idx, job in self.active_jobs.items():
+            completed_weights += job.prior["C"] * self.instance.job_weights[j_idx]
         return completed_weights
 
     def _get_obs(self) -> ObservationSpaceType:
