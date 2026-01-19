@@ -112,8 +112,8 @@ class PredictionEnv(gym.Env):
                 {
                     "idx": str(i), 
                     "elapsed_time": 0, 
-                    "q_ij": self.instance.process_probs[j, i], 
-                    "p_ij": self.instance.process_times[j, i],
+                    "q_ij": float(self.instance.process_probs[j, i]), 
+                    "p_ij": int(self.instance.process_times[j, i]),
                 }
             )
         for j_idx, job in self.active_jobs.items():
