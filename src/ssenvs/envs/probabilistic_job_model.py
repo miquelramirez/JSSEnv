@@ -3,6 +3,8 @@ from pgmpy.models import DynamicBayesianNetwork as DBN
 from pgmpy.inference import DBNInference
 import numpy as np
 import copy
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="pgmpy")
 
 class Job:
 
