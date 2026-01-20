@@ -17,6 +17,7 @@ class Job:
         self.current_processes = current_processes
         self.prior = prior
         self.evidence = {("K", 0): 0, ("K", 1): 0}
+        assert len(self.current_process) + 3 == len(self.prior)
 
     def new_execution(self, machine_info: dict) -> None:
         required_keys = {"id", "elapsed_time", "q_ij", "p_ij"}
