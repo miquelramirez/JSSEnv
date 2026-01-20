@@ -43,7 +43,7 @@ class Job:
         #self.deadline = max(0, self.deadline - 1)
         proc_num = len(self.current_processes)
         for idx in range(proc_num - 1, -1, -1): # count backwards
-            if self.current_processes[idx]["elapsed_time"] >= self.current_processes[idx]["p_ij"]:
+            if self.current_processes[idx]["elapsed_time"] > self.current_processes[idx]["p_ij"]:
                 # Remove job if it has completed 
                 self.current_processes.pop(idx)
             else:
@@ -74,13 +74,13 @@ class Job:
         """
         Return all proc that are mid-way through
         """
-        return [proc for proc in self.current_processes if proc["elapsed_time"] > 0 and proc["elapsed_time"] <  proc["p_ij"]]
+        return [proc for proc in self.current_processes if proc["elapsed_time"] > 0 and proc["elapsed_time"] <=  proc["p_ij"]]
     
     def get_final(self) -> list:
         """
         Return all proc that are mid-way through
         """
-        return [proc for proc in self.current_processes if proc["elapsed_time"] == proc["p_ij"]]
+        return [proc for proc in self.current_processes if proc["elapsed_time"] > proc["p_ij"]]
 
 def job_to_transition_matrix(job: Job):
 
