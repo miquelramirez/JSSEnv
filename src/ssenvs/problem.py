@@ -45,13 +45,13 @@ class ProblemData(object):
                     raise RuntimeError(f"Machine lists {len(machine.get('times'))} processing times, "
                                        f"but we have {self.jobs} jobs")
                 for j, p_ij in enumerate(machine.get('times')):
-                    self.process_times[j] = p_ij
+                    self.process_times[j, i] = p_ij
                 # Note that we model probability of job being aborted by the machine
                 if len(machine.get('probs')) != self.jobs:
                     raise RuntimeError(f"Machine lists {len(machine.get('probs'))} abort probabilities, "
                                        f"but we have {self.jobs} jobs")
                 for j, q_ij in enumerate(machine.get('probs')):
-                    self.process_probs[j] = 1 - q_ij
+                    self.process_probs[j, i] = 1 - q_ij
 
         self.max_time_jobs = max(self.jobs_max_length)
         # Check Problem data correctness
