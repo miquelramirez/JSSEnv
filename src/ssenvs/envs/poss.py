@@ -84,6 +84,9 @@ class StochasticEnv(gym.Env):
         # put all released jobs out
         self.current_time_step = 0
         self.pending = set([j for j in range(0, self.instance.jobs) if self.releases[j] == self.current_time_step])
+        
+        # reset elapsed time
+        self.elapsed: np.ndarray = np.zeros(self.instance.jobs, dtype=int)
 
         self.trace = [self._get_obs()]
         self.feedback = dict()
