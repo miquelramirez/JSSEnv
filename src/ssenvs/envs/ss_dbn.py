@@ -104,6 +104,17 @@ class PredictionEnv(gym.Env):
 
         return self.trace[-1], self._get_info(), 0.0, False, False   
 
+    def _get_reward(self) -> float:
+        """
+        Returns reward
+        """
+        mu_t, _ = self.trace[-1]
+        objective = 0
+        for job in self.problem.jobs:
+            completed_prob = mu_t[job.name][1]
+            objective += job.params.value * completed_prob
+        return objective
+
     def _get_info(self) -> InfoType:
         return {}
 
