@@ -79,8 +79,8 @@ class PredictionEnv(gym.Env):
             return self.trace[-1], self._get_info(), self._get_reward(), True, False
 
         mu_t, m_utils_t = self.trace[-1]
-        job_idx = [j.params.name for j in self.problem.jobs]
-        action_dict = {j_idx: 0 for j_idx in job_idx}
+        job_idx_map = {num: j.params.name for num, j in enumerate(self.problem.jobs)}
+        action_dict = {j_idx: 0 for j_idx in job_idx_map.values()}
 
         # Translate to internal representation for DBN. We use 0 as a dummy action. I.e., no action.
         for j, i in action:
@@ -88,13 +88,15 @@ class PredictionEnv(gym.Env):
             action_dict[j] = i + 1
 
         trans_models = {}
-        for j, i in action_dict.items():
-            machine_utilisation = m_utils_t[i - 1]
-            trans_models[j] = self.problem.jobs[j].get_transition_model(action=i, time_step = self.current_time_step, machine_utilisation=machine_utilisation) 
+        for j in range(len(self.problem.jobs)):
+            job_idx = job_idx_map[j]
+            act = action_dict[job_idx]
+            machine_utilisation = m_utils_t[act - 1]
+            trans_models[j] = self.problem.jobs[j].get_transition_model(action=act, time_step = self.current_time_step, machine_utilisation=machine_utilisation) 
 
         # Propagate transitions
         mu_t_plus_1 = {}
-        for j in job_idx:
+        for j in range(len(self.problem.jobs)):
             mu_t_plus_1[j] = np.zeros_like(mu_t[j])
             mu_t_plus_1[j] = propagate(mu_t[j], trans_models[j])
 
