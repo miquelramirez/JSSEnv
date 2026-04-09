@@ -98,7 +98,7 @@ class PredictionEnv(gym.Env):
             mu_t_plus_1[j] = np.zeros_like(mu_t[j])
             mu_t_plus_1[j] = propagate(mu_t[j], trans_models[j])
 
-        machine_utilisation = obtain_machine_usage_levels(self.problem, self.mu)
+        machine_utilisation = obtain_machine_usage_levels(self.problem, mu_t_plus_1)
 
         self.trace.append(mu_t_plus_1, machine_utilisation)
 
