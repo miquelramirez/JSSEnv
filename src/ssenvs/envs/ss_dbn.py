@@ -58,7 +58,7 @@ class PredictionEnv(gym.Env):
         }
 
         # Machine utilisation
-        machine_utilisation = obtain_machine_usage_levels(self.problem, self.mu)
+        machine_utilisation = obtain_machine_usage_levels(self.problem, mu)
 
 
         self.trace = [(mu, machine_utilisation)]
