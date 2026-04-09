@@ -49,6 +49,7 @@ class PredictionEnv(gym.Env):
 
         self.problem: JobSchedulingBeliefState = options.get('initial')
         self.current_time_step = 0 
+        self.t_max = options.get('t_max')
 
         self.feedback = {}
 
