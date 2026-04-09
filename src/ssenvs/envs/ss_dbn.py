@@ -112,8 +112,8 @@ class PredictionEnv(gym.Env):
         """
         mu_t, _ = self.trace[-1]
         objective = 0
-        for job in self.problem.jobs:
-            completed_prob = mu_t[job.params.name][1]
+        for j_idx, job in enumerate(self.problem.jobs):
+            completed_prob = mu_t[j_idx][1]
             objective += job.params.value * completed_prob
         return objective
 
