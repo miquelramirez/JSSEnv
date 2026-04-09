@@ -48,7 +48,7 @@ class PredictionEnv(gym.Env):
                              f"key in the options dictionary.")
 
         self.problem: JobSchedulingBeliefState = options.get('initial')
-        self.current_time_step = options['current_time_step']
+        self.current_time_step = 0 
 
         self.feedback = {}
 
