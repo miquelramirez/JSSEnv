@@ -79,7 +79,7 @@ class PredictionEnv(gym.Env):
             return self.trace[-1], self._get_info(), self._get_reward(), True, False
 
         mu_t, m_utils_t = self.trace[-1]
-        job_idx = [j.name for j in self.problem.jobs]
+        job_idx = [j.params.name for j in self.problem.jobs]
         action_dict = {j_idx: 0 for j_idx in job_idx}
 
         # Translate to internal representation for DBN. We use 0 as a dummy action. I.e., no action.
@@ -111,7 +111,7 @@ class PredictionEnv(gym.Env):
         mu_t, _ = self.trace[-1]
         objective = 0
         for job in self.problem.jobs:
-            completed_prob = mu_t[job.name][1]
+            completed_prob = mu_t[job.param.name][1]
             objective += job.params.value * completed_prob
         return objective
 
