@@ -69,8 +69,8 @@ class PredictionEnv(gym.Env):
             logging.debug(f"Done with rollout")
             return self.trace[-1], self._get_info(), self._get_reward(), True, False
 
-        mu_t, m_utils_t = self.trace[-1]
-        job_idx_map = {num: j.params.name for num, j in enumerate(self.problem.jobs)}
+        js_problem, mu_t, m_utils_t, _ = self.trace[-1]
+        job_idx_map = {num: j.params.name for num, j in enumerate(js_problem.jobs)}
         action_dict = {j_idx: 0 for j_idx in job_idx_map.values()}
 
         # Translate to internal representation for DBN. We use 0 as a dummy action. I.e., no action.
@@ -79,20 +79,20 @@ class PredictionEnv(gym.Env):
             action_dict[j] = i + 1
 
         trans_models = {}
-        for j in range(len(self.problem.jobs)):
+        for j in range(len(js_problem.jobs)):
             job_idx = job_idx_map[j]
             act = action_dict[job_idx]
-            trans_models[j] = self.problem.jobs[j].get_transition_model(action=act, time_step = self.current_time_step, machine_utilisation=m_utils_t) 
+            trans_models[j] = js_problem.jobs[j].get_transition_model(action=act, time_step = self.current_time_step, machine_utilisation=m_utils_t) 
 
         # Propagate transitions
         mu_t_plus_1 = {}
-        for j in range(len(self.problem.jobs)):
+        for j in range(len(js_problem.jobs)):
             mu_t_plus_1[j] = np.zeros_like(mu_t[j])
             mu_t_plus_1[j] = propagate(mu_t[j], trans_models[j])
 
-        m_utils_t_plus_1 = obtain_machine_usage_levels(self.problem, mu_t_plus_1)
+        m_utils_t_plus_1 = obtain_machine_usage_levels(js_problem, mu_t_plus_1)
 
-        self.trace.append((mu_t_plus_1, m_utils_t_plus_1))
+        self.trace.append((js_problem, mu_t_plus_1, m_utils_t_plus_1, self.current_time_step))
 
         return self.trace[-1], self._get_info(), 0.0, False, False   
 
@@ -100,9 +100,9 @@ class PredictionEnv(gym.Env):
         """
         Returns reward
         """
-        mu_t, _ = self.trace[-1]
+        js_problem, mu_t, _, _ = self.trace[-1]
         objective = 0
-        for j_idx, job in enumerate(self.problem.jobs):
+        for j_idx, job in enumerate(js_problem.jobs):
             completed_prob = mu_t[j_idx][1]
             objective += job.params.value * completed_prob
         return objective
