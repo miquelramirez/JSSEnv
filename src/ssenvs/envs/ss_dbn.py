@@ -47,22 +47,13 @@ class PredictionEnv(gym.Env):
             raise ValueError(f"Prediction environment requires initial state to be provided as a "
                              f"key in the options dictionary.")
 
-        self.problem: JobSchedulingBeliefState = options.get('initial')
-        self.current_time_step = 0 
+        js_problem, mu, machine_utilisation, time_step = options.get('initial')
+        self.current_time_step = time_step
         self.t_max = options.get('t_max')
 
         self.feedback = {}
 
-        # TODO: Check indexing here.
-        mu = {
-            j: np.eye(200)[self.problem.jobs[j].set_map[self.problem.jobs[j].params.state_prior]] for j in range(len(self.problem.jobs))
-        }
-
-        # Machine utilisation
-        machine_utilisation = obtain_machine_usage_levels(self.problem, mu)
-
-
-        self.trace = [(mu, machine_utilisation)]
+        self.trace = [(js_problem, mu, machine_utilisation, time_step)]
 
 
         return self.trace[-1], self._get_info()
