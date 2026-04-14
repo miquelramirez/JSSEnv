@@ -118,9 +118,13 @@ class PredictionEnv(gym.Env):
         for j_num, j in enumerate(js_problem.jobs):
             for exe in j.current_executions.values():
                 if current_time > exe.keywords["finish_time"]:
+                    m_idx = None
                     for exe_tuple, value in j.set_map.items():
                         if value == exe.keywords["working_set_index"]:
                             m_idx = exe_tuple[0]
+                            break
+                    if m_idx is None:
+                        raise ValueError(f"Value {value} is not in j.set_map")
                     key = (j.params.name, js_problem.machines[m_idx].name)
                     success_prob = mu_t[j_num][1] # 1 == Complete 
                     feedback[key] = float(success_prob)
