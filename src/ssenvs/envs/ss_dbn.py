@@ -108,15 +108,17 @@ class PredictionEnv(gym.Env):
         return objective
 
     def _get_info(self) -> InfoType:
-        return {}
+        return dict(t=self.current_time_step, 
+                    arms=self._calc_available_arms(), 
+                    )
 
     def _calc_available_arms(self) -> list[tuple[int, int]]:
+        js_problem, mu_t, m_utils_t, _ = self.trace[-1]
         applicable: list[tuple[int, int]] = []
-        for j in self.pending:
-            for i in self.idle:
-                if self.current_time_step + self.instance.process_times[j, i] < self.deadlines[j]:
-                    applicable.append((j, i))
-
+        for j_num, j in enumerate(js_problem.jobs):
+            for m_num, m in enumerate(js_problem.machines):
+                if self.current_time_step + j.params.t_process[m_num] < j.params.deadline and m_utils_t[m_num] < 1.0:
+                    applicable.append((j.params.name, m.name))
         return applicable
 
 
