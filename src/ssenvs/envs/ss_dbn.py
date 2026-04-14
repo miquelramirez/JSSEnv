@@ -64,6 +64,7 @@ class PredictionEnv(gym.Env):
         action is an assigment from jobs to machines
         """
         self.current_time_step += 1
+        self.feedback = {}
 
         if self.current_time_step == self.t_max:
             logging.debug(f"Done with rollout")
@@ -89,27 +90,17 @@ class PredictionEnv(gym.Env):
         for j in range(len(js_problem.jobs)):
             mu_t_plus_1[j] = np.zeros_like(mu_t[j])
             mu_t_plus_1[j] = propagate(mu_t[j], trans_models[j])
-
+        
         m_utils_t_plus_1 = obtain_machine_usage_levels(js_problem, mu_t_plus_1)
 
         self.trace.append((js_problem, mu_t_plus_1, m_utils_t_plus_1, self.current_time_step))
 
         return self.trace[-1], self._get_info(), 0.0, False, False   
 
-    def _get_reward(self) -> float:
-        """
-        Returns reward
-        """
-        js_problem, mu_t, _, _ = self.trace[-1]
-        objective = 0
-        for j_idx, job in enumerate(js_problem.jobs):
-            completed_prob = mu_t[j_idx][1]
-            objective += job.params.value * completed_prob
-        return objective
-
     def _get_info(self) -> InfoType:
         return dict(t=self.current_time_step, 
                     arms=self._calc_available_arms(), 
+                    feedback=self._get_feedback()
                     )
 
     def _calc_available_arms(self) -> list[tuple[int, int]]:
@@ -120,6 +111,20 @@ class PredictionEnv(gym.Env):
                 if self.current_time_step + j.params.t_process[m_num] < j.params.deadline and m_utils_t[m_num] < 1.0:
                     applicable.append((j.params.name, m.name))
         return applicable
+    
+    def _get_feedback(self):
+        js_problem, mu_t, _, current_time = self.trace[-1]
+        feedback = {}
+        for j_num, j in enumerate(js_problem.jobs):
+            for exe in j.current_executions.values():
+                if current_time > exe.keywords["finish_time"]:
+                    for exe_tuple, value in j.set_map.items():
+                        if value == exe.keywords["working_set_index"]:
+                            m_idx = exe_tuple[1]
+                    key = (j.params.name, js_problem.machines[m_idx].name)
+                    success_prob = mu_t[j_num][1] # 1 == Complete 
+                    feedback[key] = float(success_prob)
+        return feedback
 
 
 
