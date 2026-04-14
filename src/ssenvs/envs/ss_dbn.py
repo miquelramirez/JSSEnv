@@ -120,7 +120,7 @@ class PredictionEnv(gym.Env):
                 if current_time > exe.keywords["finish_time"]:
                     for exe_tuple, value in j.set_map.items():
                         if value == exe.keywords["working_set_index"]:
-                            m_idx = exe_tuple[1]
+                            m_idx = exe_tuple[0]
                     key = (j.params.name, js_problem.machines[m_idx].name)
                     success_prob = mu_t[j_num][1] # 1 == Complete 
                     feedback[key] = float(success_prob)
