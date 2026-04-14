@@ -130,5 +130,16 @@ class PredictionEnv(gym.Env):
                     feedback[key] = float(success_prob)
         return feedback
 
+    def _get_reward(self) -> float:
+        """
+        Returns reward
+        """
+        js_problem, mu_t, _, _ = self.trace[-1]
+        objective = 0
+        for j_idx, job in enumerate(js_problem.jobs):
+            completed_prob = mu_t[j_idx][1]
+            objective += job.params.value * completed_prob
+        return objective
+
 
 
