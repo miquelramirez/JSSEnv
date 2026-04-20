@@ -81,7 +81,7 @@ class PredictionEnv(gym.Env):
 
         self._known_jobs = self.completed | self.pending | self.failed | set([j for j, _ in self.working])
 
-        self.n_t = 0 if len(self._known_jobs) == 0 else max(self._known_jobs)
+        self.n_t = 0 if len(self._known_jobs) == 0 else max(self._known_jobs) + 1
 
         self._app_mask = np.zeros((self.instance.machines, self.n_t + 1), dtype=np.bool)
         self._just_completed: set[int] = set()
@@ -103,7 +103,7 @@ class PredictionEnv(gym.Env):
         assert action.shape[1] == self.n_t + 1
 
         m: int = self.instance.machines
-        n: int = self.n_t
+        n: int = self.n_t + 1
 
         for i in range(m):
             for j in range(n):
@@ -156,7 +156,7 @@ class PredictionEnv(gym.Env):
                         self.elapsed[j] += 1
                         next_working.add((j, i))
         for i in range(m):
-            for j in range(n):
+            for j in range(self.n_t):
                 if not action[i, j]:
                     continue
                 v_ji = self.np_random.random()
