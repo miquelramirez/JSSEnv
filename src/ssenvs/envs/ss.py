@@ -106,7 +106,7 @@ class PredictionEnv(gym.Env):
         n: int = self.n_t + 1
 
         for i in range(m):
-            for j in range(n):
+            for j in range(self.n_t):
                 if action[i, j]:
                     if j not in self.pending:
                         raise ValueError(f"Invalid assignment: ({j}, {i}): Job {j} not in pending.")
