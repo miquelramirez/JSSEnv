@@ -159,6 +159,7 @@ class PredictionEnv(gym.Env):
             for j in range(self.n_t):
                 if not action[i, j]:
                     continue
+                assert j in self.pending
                 v_ji = self.np_random.random()
                 q_ji = self.instance.process_probs[j, i]
                 logging.debug(f"Test for job {j} successfully starts processing at machine {i}: disturbance: {v_ji}, probability: {q_ji}")
