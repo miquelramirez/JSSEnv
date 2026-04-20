@@ -186,7 +186,7 @@ class PredictionEnv(gym.Env):
         self.pending = next_pending
 
         self.trace.append(self._get_obs())
-        return self.trace[-1], self._get_info(), 0.0, False, False
+        return self.trace[-1], self._get_info(), self._get_reward(), False, False
 
     def _get_reward(self) -> list[tuple[int, float]]:
         """
