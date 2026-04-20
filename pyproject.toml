@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "ssenvs"
-version = "1.1.1"
+version = "1.1.2"
 description = "An optimized OpenAi gym's environment to simulate the Job-Shop Scheduling problem."
 readme = "README.md"
 authors = [

@@ -81,7 +81,7 @@ class PredictionEnv(gym.Env):
 
         self._known_jobs = self.completed | self.pending | self.failed | set([j for j, _ in self.working])
 
-        self.n_t = max(self._known_jobs)
+        self.n_t = 0 if len(self._known_jobs) == 0 else max(self._known_jobs)
 
         self._app_mask = np.zeros((self.instance.machines, self.n_t + 1), dtype=np.bool)
         self._just_completed: set[int] = set()
