@@ -228,4 +228,4 @@ class PredictionEnv(gym.Env):
             for i in self.idle:
                 if self.current_time_step + self.instance.process_times[j, i] < self.deadlines[j]:
                     self._app_mask[i, j] = True
-        self._app_mask[m, :] = True
+        self._app_mask[-1, :] = True
