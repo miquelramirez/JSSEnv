@@ -218,6 +218,7 @@ class PredictionEnv(gym.Env):
         self._update_available_arms()
         return dict(t=self.current_time_step,
                     feedback=self.feedback,
+                    weights=self.instance.job_weights,
                     arms=self._app_mask.copy(),
                     elapsed=self.elapsed,)
 
