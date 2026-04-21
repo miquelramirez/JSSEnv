@@ -83,7 +83,7 @@ class PredictionEnv(gym.Env):
 
         self.n_t = 0 if len(self._known_jobs) == 0 else max(self._known_jobs) + 1
 
-        self._app_mask = np.zeros((self.instance.machines, self.n_t + 1), dtype=np.bool)
+        self._app_mask = np.zeros((self.instance.machines + 1, self.n_t), dtype=np.bool)
         self._just_completed: set[int] = set()
         self._just_failed: set[int] = set()
 
@@ -99,14 +99,14 @@ class PredictionEnv(gym.Env):
         Steps the environment
         """
 
-        assert action.shape[0] == self.instance.machines
-        assert action.shape[1] == self.n_t + 1
+        assert action.shape[0] == self.instance.machines + 1
+        assert action.shape[1] == self.n_t
 
         m: int = self.instance.machines
-        n: int = self.n_t + 1
+        n: int = self.n_t
 
         for i in range(m):
-            for j in range(self.n_t):
+            for j in range(n):
                 if action[i, j]:
                     if j not in self.pending:
                         raise ValueError(f"Invalid assignment: ({j}, {i}): Job {j} not in pending.")
@@ -156,7 +156,7 @@ class PredictionEnv(gym.Env):
                         self.elapsed[j] += 1
                         next_working.add((j, i))
         for i in range(m):
-            for j in range(self.n_t):
+            for j in range(n):
                 if not action[i, j]:
                     continue
                 assert j in self.pending
@@ -228,4 +228,4 @@ class PredictionEnv(gym.Env):
             for i in self.idle:
                 if self.current_time_step + self.instance.process_times[j, i] < self.deadlines[j]:
                     self._app_mask[i, j] = True
-        self._app_mask[:, self.n_t] = True
+        self._app_mask[m, :] = True
