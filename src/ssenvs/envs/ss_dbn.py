@@ -152,7 +152,7 @@ class PredictionEnv(gym.Env):
         thetas = []
         weights = []
         for j_idx, j in enumerate(js_p.jobs):
-            thetas.append(mu[1][j_idx][1])
+            thetas.append(mu[j_idx][1])
             weights.append(j.params.value)
 
         dist = defaultdict(float)
