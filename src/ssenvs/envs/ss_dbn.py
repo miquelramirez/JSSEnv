@@ -73,7 +73,7 @@ class PredictionEnv(gym.Env):
             logging.debug(f"Done with rollout")
             info = self._get_info()
             info["p_f"] = self.p_f_geq_0_dp()
-            return self.trace[-1], self._get_info(), self._get_reward(), True, False
+            return self.trace[-1], info, self._get_reward(), True, False
 
         js_problem, mu_t, m_utils_t, _ = self.trace[-1]
         job_idx_map = {num: j.params.name for num, j in enumerate(js_problem.jobs)}
@@ -152,7 +152,7 @@ class PredictionEnv(gym.Env):
         thetas = []
         weights = []
         for j_idx, j in enumerate(js_p.jobs):
-            thetas.append(mu[1][j_idx][:3])
+            thetas.append(mu[1][j_idx][1])
             weights.append(j.params.value)
 
         dist = defaultdict(float)
