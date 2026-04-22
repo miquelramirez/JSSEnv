@@ -18,6 +18,9 @@ from abstract_dbns.full_graph import MachineParams
 from abstract_dbns.full_graph import Job 
 from abstract_dbns.common.propagate import propagate
 
+from collections import defaultdict
+
+
 logger = logging.getLogger(__name__)
 
 class PredictionEnv(gym.Env):
@@ -68,6 +71,8 @@ class PredictionEnv(gym.Env):
 
         if self.current_time_step == self.t_max:
             logging.debug(f"Done with rollout")
+            info = self._get_info()
+            info["p_f"] = self.p_f_geq_0_dp()
             return self.trace[-1], self._get_info(), self._get_reward(), True, False
 
         js_problem, mu_t, m_utils_t, _ = self.trace[-1]
@@ -141,6 +146,23 @@ class PredictionEnv(gym.Env):
             failed_prob = mu_t[j_idx][2]
             objective += (job.params.value * completed_prob) - (job.params.value * failed_prob)
         return objective
+    
+    def p_f_geq_0_dp(self):
+        js_p, mu, machine_util, _ = self.trace[-1]
+        thetas = []
+        weights = []
+        for j_idx, j in enumerate(js_p.jobs):
+            thetas.append(mu[1][j_idx][:3])
+            weights.append(j.params.value)
 
+        dist = defaultdict(float)
+        dist[0.0] = 1.0
 
+        for w, theta in zip(weights, thetas):
+            new_dist = defaultdict(float)
+            for val, prob in dist.items():
+                new_dist[val + w] += theta * prob        # X_j = 1
+                new_dist[val - w] += (1 - theta) * prob  # X_j = 0
+            dist = new_dist
 
+        return sum(p for v, p in dist.items() if v < 0)#, dict(dist)
