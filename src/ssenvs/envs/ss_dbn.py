@@ -138,7 +138,8 @@ class PredictionEnv(gym.Env):
         objective = 0
         for j_idx, job in enumerate(js_problem.jobs):
             completed_prob = mu_t[j_idx][1]
-            objective += job.params.value * completed_prob
+            failed_prob = mu_t[j_idx][2]
+            objective += (job.params.value * completed_prob) - (job.params.value * failed_prob)
         return objective
 
 
