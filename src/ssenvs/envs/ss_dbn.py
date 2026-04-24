@@ -92,8 +92,7 @@ class PredictionEnv(gym.Env):
             return self.trace[-1], info, self._get_reward(), True, False
 
         state: BeliefState = self.trace[-1]
-        job_idx_map = {num: j.params.name for num, j in enumerate(state.js_problem.jobs)}
-        action_dict = {j_idx: 0 for j_idx in job_idx_map.values()}
+        action_dict = {j_idx: 0 for j_idx in range(len(state.js_problem.jobs))}
 
         # Translate to internal representation for DBN. We use 0 as a dummy action. I.e., no action.
         for j, i in action:
@@ -101,9 +100,8 @@ class PredictionEnv(gym.Env):
             action_dict[j] = i + 1
 
         trans_models = {}
-        for j in range(len(state.js_problem.jobs)):
-            job_idx = job_idx_map[j]
-            act = action_dict[job_idx]
+        for j_idx in range(len(state.js_problem.jobs)):
+            act = action_dict[j_idx]
             trans_models[j] = state.js_problem.jobs[j].get_transition_model(action=act, time_step = self.current_time_step, machine_utilisation=state.machine_utils) 
 
         # Propagate transitions
