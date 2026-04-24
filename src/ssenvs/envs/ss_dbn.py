@@ -78,6 +78,10 @@ class PredictionEnv(gym.Env):
         Steps the environment
         action is an assigment from jobs to machines
         """
+
+        # Change action to regular format.
+        action = [(t[1], t[0]) for t in zip(*np.nonzero(action)) if t[0] < len(self.trace[-1].js_problem.machines)]
+
         self.current_time_step += 1
         self.feedback = {}
 
