@@ -134,10 +134,10 @@ class PredictionEnv(gym.Env):
             for exe in j.execution_to_remove: 
                 set_idx = j.current_executions[exe].keywords.get("working_set_index")
                 rew = s_t_minus_1.mu[j_idx][set_idx] * j.params.value
-                rewards.append(j, rew)
+                rewards.append((j_idx, rew))
             if self.current_time_step == j.params.deadline + 1: 
                 rew = s_t_minus_1.mu[j_idx][FAILED] * j.params.value
-                rewards.append(j, -rew)
+                rewards.append((j_idx, -rew))
         return rewards
 
     def _calc_available_arms(self) -> list[tuple[int, int]]:
