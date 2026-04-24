@@ -123,7 +123,7 @@ class PredictionEnv(gym.Env):
 
         return self.trace[-1], self._get_info(), self._get_reward(), False, False   
 
-    def get_reward(self) -> list[tuple[int, float]]: 
+    def _get_reward(self) -> list[tuple[int, float]]: 
         """
         Returns rewards
         """
