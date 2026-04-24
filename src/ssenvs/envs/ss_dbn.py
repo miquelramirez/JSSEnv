@@ -20,8 +20,18 @@ from abstract_dbns.common.propagate import propagate
 
 from collections import defaultdict
 
-
 logger = logging.getLogger(__name__)
+
+PENDING = 0
+COMPLETED = 1
+FAILED = 2
+
+@dataclass
+class BeliefState(object):
+    js_problem: JobSchedulingBeliefState
+    mu: np.ndarray
+    machine_util: np.ndarray
+    time_step: int
 
 class PredictionEnv(gym.Env):
     """
@@ -135,18 +145,31 @@ class PredictionEnv(gym.Env):
                     feedback[key] = float(success_prob)
         return feedback
 
-    def _get_reward(self) -> float:
+    def get_reward(self) -> list[tuple[int, float]]: 
         """
-        Returns reward
+        Returns rewards
         """
-        js_problem, mu_t, _, _ = self.trace[-1]
-        objective = 0
-        for j_idx, job in enumerate(js_problem.jobs):
-            completed_prob = mu_t[j_idx][1]
-            failed_prob = mu_t[j_idx][2]
-            objective += (job.params.value * completed_prob) - (job.params.value * failed_prob)
-        return objective
-    
+        rewards: list[tuple[int, float]] = []
+        _, mu_t_minus_1, m_utils_t_, _ = self.trace[-2]
+        js_problem, mu_t, m_utils_t, _ = self.trace[-1]
+        for j_idx, j in js_problem.jobs:
+            for exe in j.execution_to_remove: 
+                set_idx = j.current_executions[exe].keywords.get("working_set_index")
+                rew = mu_t_minus_1[j_idx][set_idx] * j.params.value
+                rewards.append(j, rew)
+            if self.current_time_step == j.params.deadline + 1: 
+                rew = mu_t_minus_1[j_idx][FAILED] * j.params.value
+                rewards.append(j, -rew)
+        return rewards
+
+    def _get_info(self) -> InfoType:
+        self._update_available_arms()
+        return dict(t=self.current_time_step,
+                    feedback=self.feedback,
+                    weights=self.trace[-1],
+                    arms=self._app_mask.copy(),
+                    elapsed=self.elapsed,)
+
     def p_f_geq_0_dp(self):
         js_p, mu, machine_util, _ = self.trace[-1]
         thetas = []
