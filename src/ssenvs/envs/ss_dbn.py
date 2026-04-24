@@ -150,11 +150,11 @@ class PredictionEnv(gym.Env):
         return applicable
     
     def _get_feedback(self):
-        js_problem, mu_t, _, current_time = self.trace[-1]
+        state = self.trace[-1]
         feedback = {}
-        for j_num, j in enumerate(js_problem.jobs):
+        for j_num, j in enumerate(state.js_problem.jobs):
             for exe in j.current_executions.values():
-                if current_time > exe.keywords["finish_time"]:
+                if state.time_step > exe.keywords["finish_time"]:
                     m_idx = None
                     for exe_tuple, value in j.set_map.items():
                         if value == exe.keywords["working_set_index"]:
@@ -162,8 +162,8 @@ class PredictionEnv(gym.Env):
                             break
                     if m_idx is None:
                         raise ValueError(f"Value {value} is not in j.set_map")
-                    key = (j.params.name, js_problem.machines[m_idx].name)
-                    success_prob = mu_t[j_num][1] # 1 == Complete 
+                    key = (j.params.name, state.js_problem.machines[m_idx].name)
+                    success_prob = state.mu[j_num][1] # 1 == Complete 
                     feedback[key] = float(success_prob)
         return feedback
 
@@ -191,11 +191,11 @@ class PredictionEnv(gym.Env):
             self._app_mask[-1, j_idx] = True # Always allow do nothing
 
     def p_f_geq_0_dp(self):
-        js_p, mu, machine_util, _ = self.trace[-1]
+        state = self.trace[-1]
         thetas = []
         weights = []
-        for j_idx, j in enumerate(js_p.jobs):
-            thetas.append(mu[j_idx][1])
+        for j_idx, j in enumerate(state.js_problem.jobs):
+            thetas.append(state.mu[j_idx][1])
             weights.append(j.params.value)
 
         dist = defaultdict(float)
