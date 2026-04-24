@@ -64,7 +64,7 @@ class PredictionEnv(gym.Env):
         self.current_time_step = state.time_step
         self.t_max = options.get('t_max')
 
-        self._app_mask = np.zeros((len(state.js_problem.machines) + 1, len(self.js_problem.jobs)), dtype=np.bool)
+        self._app_mask = np.zeros((len(state.js_problem.machines) + 1, len(state.js_problem.jobs)), dtype=np.bool)
 
         self.feedback = {}
 
