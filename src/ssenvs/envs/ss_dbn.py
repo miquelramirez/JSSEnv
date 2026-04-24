@@ -184,7 +184,7 @@ class PredictionEnv(gym.Env):
                     and state.mu[j_idx][PENDING] > 0
                 ):
                     self._app_mask[m_idx, j_idx] = True
-            self._app_mask[-1, j] = True # Always allow do nothing
+            self._app_mask[-1, j_idx] = True # Always allow do nothing
 
     def p_f_geq_0_dp(self):
         js_p, mu, machine_util, _ = self.trace[-1]
