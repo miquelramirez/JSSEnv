@@ -130,7 +130,7 @@ class PredictionEnv(gym.Env):
         rewards: list[tuple[int, float]] = []
         s_t_minus_1: BeliefState = self.trace[-2]
         s_t: BeliefState = self.trace[-1]
-        for j_idx, j in s_t.js_problem.jobs:
+        for j_idx, j in enumerate(s_t.js_problem.jobs):
             for exe in j.execution_to_remove: 
                 set_idx = j.current_executions[exe].keywords.get("working_set_index")
                 rew = s_t_minus_1.mu[j_idx][set_idx] * j.params.value
@@ -143,9 +143,9 @@ class PredictionEnv(gym.Env):
     def _calc_available_arms(self) -> list[tuple[int, int]]:
         js_problem, mu_t, m_utils_t, _ = self.trace[-1]
         applicable: list[tuple[int, int]] = []
-        for j_num, j in enumerate(js_problem.jobs):
-            for m_num, m in enumerate(js_problem.machines):
-                if self.current_time_step + j.params.t_process[m_num] < j.params.deadline and m_utils_t[m_num] < 1.0:
+        for j_idx, j in enumerate(js_problem.jobs):
+            for m_idx, m in enumerate(js_problem.machines):
+                if self.current_time_step + j.params.t_process[m_idx] < j.params.deadline and m_utils_t[m_idx] < 1.0:
                     applicable.append((j.params.name, m.name))
         return applicable
     
