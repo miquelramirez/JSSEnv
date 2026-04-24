@@ -102,7 +102,7 @@ class PredictionEnv(gym.Env):
         trans_models = {}
         for j_idx in range(len(state.js_problem.jobs)):
             act = action_dict[j_idx]
-            trans_models[j] = state.js_problem.jobs[j].get_transition_model(action=act, time_step = self.current_time_step, machine_utilisation=state.machine_utils) 
+            trans_models[j] = state.js_problem.jobs[j_idx].get_transition_model(action=act, time_step = self.current_time_step, machine_utilisation=state.machine_utils) 
 
         # Propagate transitions
         mu_t_plus_1 = {}
