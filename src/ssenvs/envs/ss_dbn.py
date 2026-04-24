@@ -29,8 +29,8 @@ FAILED = 2
 @dataclass
 class BeliefState(object):
     js_problem: JobSchedulingBeliefState
-    mu: np.ndarray
-    machine_util: np.ndarray
+    mu: dict[int, np.ndarray]
+    machine_utils: np.ndarray
     time_step: int
 
 class PredictionEnv(gym.Env):
@@ -60,13 +60,15 @@ class PredictionEnv(gym.Env):
             raise ValueError(f"Prediction environment requires initial state to be provided as a "
                              f"key in the options dictionary.")
 
-        js_problem, mu, machine_utilisation, time_step = options.get('initial')
-        self.current_time_step = time_step
+        state: BeliefState = options.get('initial')
+        self.current_time_step = state.time_step
         self.t_max = options.get('t_max')
+
+        self._app_mask = np.zeros((len(state.js_problem.machines) + 1, len(self.js_problem.jobs)), dtype=np.bool)
 
         self.feedback = {}
 
-        self.trace = [(js_problem, mu, machine_utilisation, time_step)]
+        self.trace = [state]
 
 
         return self.trace[-1], self._get_info()
@@ -82,11 +84,11 @@ class PredictionEnv(gym.Env):
         if self.current_time_step == self.t_max:
             logging.debug(f"Done with rollout")
             info = self._get_info()
-            info["p_f"] = self.p_f_geq_0_dp()
+            info["p_F"] = self.p_f_geq_0_dp()
             return self.trace[-1], info, self._get_reward(), True, False
 
-        js_problem, mu_t, m_utils_t, _ = self.trace[-1]
-        job_idx_map = {num: j.params.name for num, j in enumerate(js_problem.jobs)}
+        state: BeliefState = self.trace[-1]
+        job_idx_map = {num: j.params.name for num, j in enumerate(state.js_problem.jobs)}
         action_dict = {j_idx: 0 for j_idx in job_idx_map.values()}
 
         # Translate to internal representation for DBN. We use 0 as a dummy action. I.e., no action.
@@ -95,28 +97,44 @@ class PredictionEnv(gym.Env):
             action_dict[j] = i + 1
 
         trans_models = {}
-        for j in range(len(js_problem.jobs)):
+        for j in range(len(state.js_problem.jobs)):
             job_idx = job_idx_map[j]
             act = action_dict[job_idx]
-            trans_models[j] = js_problem.jobs[j].get_transition_model(action=act, time_step = self.current_time_step, machine_utilisation=m_utils_t) 
+            trans_models[j] = state.js_problem.jobs[j].get_transition_model(action=act, time_step = self.current_time_step, machine_utilisation=state.machine_utils) 
 
         # Propagate transitions
         mu_t_plus_1 = {}
-        for j in range(len(js_problem.jobs)):
-            mu_t_plus_1[j] = np.zeros_like(mu_t[j])
-            mu_t_plus_1[j] = propagate(mu_t[j], trans_models[j])
+        for j in range(len(state.js_problem.jobs)):
+            mu_t_plus_1[j] = np.zeros_like(state.mu[j])
+            mu_t_plus_1[j] = propagate(state.mu[j], trans_models[j])
         
-        m_utils_t_plus_1 = obtain_machine_usage_levels(js_problem, mu_t_plus_1)
+        m_utils_t_plus_1 = obtain_machine_usage_levels(state.js_problem, mu_t_plus_1)
 
-        self.trace.append((js_problem, mu_t_plus_1, m_utils_t_plus_1, self.current_time_step))
+        self.trace.append(BeliefState(
+            js_problem=state.js_problem, 
+            mu =  mu_t_plus_1,
+            machine_utils = m_utils_t_plus_1, 
+            time_step = self.current_time_step
+        ))
 
-        return self.trace[-1], self._get_info(), 0.0, False, False   
+        return self.trace[-1], self._get_info(), self._get_reward(), False, False   
 
-    def _get_info(self) -> InfoType:
-        return dict(t=self.current_time_step, 
-                    arms=self._calc_available_arms(), 
-                    feedback=self._get_feedback()
-                    )
+    def get_reward(self) -> list[tuple[int, float]]: 
+        """
+        Returns rewards
+        """
+        rewards: list[tuple[int, float]] = []
+        s_t_minus_1: BeliefState = self.trace[-2]
+        s_t: BeliefState = self.trace[-1]
+        for j_idx, j in s_t.js_problem.jobs:
+            for exe in j.execution_to_remove: 
+                set_idx = j.current_executions[exe].keywords.get("working_set_index")
+                rew = s_t_minus_1.mu[j_idx][set_idx] * j.params.value
+                rewards.append(j, rew)
+            if self.current_time_step == j.params.deadline + 1: 
+                rew = s_t_minus_1.mu[j_idx][FAILED] * j.params.value
+                rewards.append(j, -rew)
+        return rewards
 
     def _calc_available_arms(self) -> list[tuple[int, int]]:
         js_problem, mu_t, m_utils_t, _ = self.trace[-1]
@@ -145,30 +163,28 @@ class PredictionEnv(gym.Env):
                     feedback[key] = float(success_prob)
         return feedback
 
-    def get_reward(self) -> list[tuple[int, float]]: 
-        """
-        Returns rewards
-        """
-        rewards: list[tuple[int, float]] = []
-        _, mu_t_minus_1, m_utils_t_, _ = self.trace[-2]
-        js_problem, mu_t, m_utils_t, _ = self.trace[-1]
-        for j_idx, j in js_problem.jobs:
-            for exe in j.execution_to_remove: 
-                set_idx = j.current_executions[exe].keywords.get("working_set_index")
-                rew = mu_t_minus_1[j_idx][set_idx] * j.params.value
-                rewards.append(j, rew)
-            if self.current_time_step == j.params.deadline + 1: 
-                rew = mu_t_minus_1[j_idx][FAILED] * j.params.value
-                rewards.append(j, -rew)
-        return rewards
-
-    def _get_info(self) -> InfoType:
+    def _get_info(self, terminal=False) -> InfoType:
         self._update_available_arms()
         return dict(t=self.current_time_step,
-                    feedback=self.feedback,
-                    weights=self.trace[-1],
+                    feedback=self.feedback, #TODO: is this used?
+                    weights=np.array([j.params.value for j in self.trace[-1].js_problem.jobs]),
                     arms=self._app_mask.copy(),
-                    elapsed=self.elapsed,)
+                    elapsed=self.elapsed,
+                    p_F=0.0)
+
+    def _update_available_arms(self) -> None:
+        self._app_mask = np.zeros_like(self._app_mask, dtype=bool)
+        m: int = self._app_mask.shape[0]
+        state: BeliefState = self.trace[-1]
+        for j_idx, j in enumerate(state.js_problem.jobs):
+            for m_idx, m in enumerate(state.js_problem.machines):
+                if (
+                    self.current_time_step + j.params.t_process[m_idx] < j.params.deadline
+                    and state.machine_utils[m_idx] < 1
+                    and state.mu[j_idx][PENDING] > 0
+                ):
+                    self._app_mask[m_idx, j_idx] = True
+            self._app_mask[-1, j] = True # Always allow do nothing
 
     def p_f_geq_0_dp(self):
         js_p, mu, machine_util, _ = self.trace[-1]
