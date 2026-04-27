@@ -173,7 +173,7 @@ class PredictionEnv(gym.Env):
                     if m_idx is None:
                         raise ValueError(f"Value {value} is not in j.set_map")
                     key = (j_idx, state.js_problem.machines[m_idx].name)
-                    success_prob = state.mu[j_num][1] # 1 == Complete 
+                    success_prob = state.mu[j_idx][1] # 1 == Complete 
                     feedback[key] = float(success_prob)
         return feedback
 
@@ -225,10 +225,10 @@ class PredictionEnv(gym.Env):
         Returns reward
         """
         state: BeliefState = self.trace[-1]
-        objective = 0
+        objective = {}
         for j_idx, job in enumerate(state.js_problem.jobs):
             #completed_prob = state.mu[j_idx][1] - self.jobs_completed_monitor[j_idx]
             #objective += job.params.value * completed_prob
             failed_prob = state.mu[j_idx][2]
-            objective += - (job.params.value * failed_prob)
+            objective[j_idx] = - (job.params.value * failed_prob)
         return objective
