@@ -130,9 +130,12 @@ class PredictionEnv(gym.Env):
         Returns rewards
         """
         rewards: dict[int, list[tuple[int, float]]] = {}
-        s_t_minus_1: BeliefState = self.trace[-2]
-        s_t: BeliefState = self.trace[-1]
-        for j_idx, j in enumerate(s_t.js_problem.jobs):
+        try:
+            s_t_minus_1: BeliefState = self.trace[-2]
+        except KeyError:
+            # Temporary fix, sometimes -2 doesn't exist
+            s_t_minus_1: BeliefState = self.trace[-1]
+        for j_idx, j in enumerate(s_t_minus_1.js_problem.jobs):
             for exe in j.execution_to_remove: 
                 set_idx = j.current_executions[exe].keywords.get("working_set_index")
                 rew = s_t_minus_1.mu[j_idx][set_idx] * j.params.value
