@@ -71,6 +71,7 @@ class PredictionEnv(gym.Env):
         self.trace = [state]
 
         self.jobs_completed_monitor = np.array([state.mu[j][1] for j in range(len(state.js_problem.jobs))])
+        self.log = {}
         
         return self.trace[-1], self._get_info()
     
@@ -152,13 +153,13 @@ class PredictionEnv(gym.Env):
         for j_idx, j in enumerate(js_problem.jobs):
             for m_idx, m in enumerate(js_problem.machines):
                 if self.current_time_step + j.params.t_process[m_idx] < j.params.deadline and m_utils_t[m_idx] < 1.0:
-                    applicable.append((j.params.name, m.name))
+                    applicable.append((j_idx, m.name))
         return applicable
     
     def _get_feedback(self):
         state = self.trace[-1]
         feedback = {}
-        for j_num, j in enumerate(state.js_problem.jobs):
+        for j_idx, j in enumerate(state.js_problem.jobs):
             for exe in j.current_executions.values():
                 if state.time_step > exe.keywords["finish_time"]:
                     m_idx = None
@@ -168,7 +169,7 @@ class PredictionEnv(gym.Env):
                             break
                     if m_idx is None:
                         raise ValueError(f"Value {value} is not in j.set_map")
-                    key = (j.params.name, state.js_problem.machines[m_idx].name)
+                    key = (j_idx, state.js_problem.machines[m_idx].name)
                     success_prob = state.mu[j_num][1] # 1 == Complete 
                     feedback[key] = float(success_prob)
         return feedback
