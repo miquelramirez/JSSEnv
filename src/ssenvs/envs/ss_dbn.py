@@ -223,8 +223,8 @@ class PredictionEnv(gym.Env):
         state: BeliefState = self.trace[-1]
         objective = 0
         for j_idx, job in enumerate(state.js_problem.jobs):
-            completed_prob = state.mu[j_idx][1] - self.jobs_completed_monitor[j_idx]
-            objective += job.params.value * completed_prob
+            #completed_prob = state.mu[j_idx][1] - self.jobs_completed_monitor[j_idx]
+            #objective += job.params.value * completed_prob
             failed_prob = state.mu[j_idx][2]
-            objective += (job.params.value * completed_prob) - (job.params.value * failed_prob)
+            objective += - (job.params.value * failed_prob)
         return objective
