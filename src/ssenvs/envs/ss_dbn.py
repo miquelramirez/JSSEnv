@@ -70,7 +70,8 @@ class PredictionEnv(gym.Env):
 
         self.trace = [state]
 
-
+        self.jobs_completed_monitor = np.array([state.mu[j][1] for j in range(len(state.js_problem.jobs))])
+        
         return self.trace[-1], self._get_info()
     
     def step(self, action: list[tuple[int, int]]) -> tuple[ObservationSpaceType, InfoType, float, bool, bool]:
@@ -81,6 +82,7 @@ class PredictionEnv(gym.Env):
 
         # Change action to regular format.
         action = [(t[1], t[0]) for t in zip(*np.nonzero(action)) if t[0] < len(self.trace[-1].js_problem.machines)]
+        #print(action)
 
         self.current_time_step += 1
         self.feedback = {}
@@ -89,6 +91,7 @@ class PredictionEnv(gym.Env):
             logging.debug(f"Done with rollout")
             info = self._get_info()
             info["p_F"] = self.p_f_geq_0_dp()
+            info["final_return"] = self._evaluate_remaining_return()
             return self.trace[-1], info, self._get_reward(), True, False
 
         state: BeliefState = self.trace[-1]
@@ -125,17 +128,22 @@ class PredictionEnv(gym.Env):
         """
         Returns rewards
         """
-        rewards: list[tuple[int, float]] = []
+        rewards: dict[int, list[tuple[int, float]]] = {}
         s_t_minus_1: BeliefState = self.trace[-2]
         s_t: BeliefState = self.trace[-1]
         for j_idx, j in enumerate(s_t.js_problem.jobs):
             for exe in j.execution_to_remove: 
                 set_idx = j.current_executions[exe].keywords.get("working_set_index")
                 rew = s_t_minus_1.mu[j_idx][set_idx] * j.params.value
-                rewards.append((j_idx, rew))
+                self.jobs_completed_monitor[j_idx] += s_t_minus_1.mu[j_idx][set_idx]
+                start_time = j.current_executions[exe].keywords.get("start_time")
+                m_idx = int(j.current_executions[exe].keywords["machine"])
+                rewards[start_time - 1] = rewards.get(start_time - 1, []) + [(j_idx, m_idx, rew)]
             if self.current_time_step == j.params.deadline + 1: 
-                rew = s_t_minus_1.mu[j_idx][FAILED] * j.params.value
-                rewards.append((j_idx, -rew))
+                # TODO: Not currently clear how to do this
+                pass
+                #rew = s_t_minus_1.mu[j_idx][FAILED] * j.params.value
+                #rewards.append((j_idx, -rew))
         return rewards
 
     def _calc_available_arms(self) -> list[tuple[int, int]]:
@@ -207,3 +215,17 @@ class PredictionEnv(gym.Env):
             dist = new_dist
 
         return sum(p for v, p in dist.items() if v < 0)#, dict(dist)
+
+    def _evaluate_remaining_return(self) -> float:
+        """
+        Returns reward
+        """
+        js_problem, mu_t, _, _ = self.trace[-1]
+        objective = 0
+        for j_idx, job in enumerate(js_problem.jobs):
+            completed_prob = mu_t[j_idx][1] - self.jobs_completed_monitor[j_idx]
+            objective += job.params.value * completed_prob
+            failed_prob = mu_t[j_idx][2]
+            objective += (job.params.value * completed_prob) - (job.params.value * failed_prob)
+        return objective
+
