@@ -132,7 +132,7 @@ class PredictionEnv(gym.Env):
         rewards: dict[int, list[tuple[int, float]]] = {}
         try:
             s_t_minus_1: BeliefState = self.trace[-2]
-        except KeyError:
+        except IndexError:
             # Temporary fix, sometimes -2 doesn't exist
             s_t_minus_1: BeliefState = self.trace[-1]
         for j_idx, j in enumerate(s_t_minus_1.js_problem.jobs):
