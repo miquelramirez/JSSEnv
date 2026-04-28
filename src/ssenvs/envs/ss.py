@@ -116,7 +116,7 @@ class PredictionEnv(gym.Env):
         self.current_time_step += 1
         self._just_completed: set[int] = set()
         self._just_failed: set[int] = set()
-        if self.current_time_step == self.t_max:
+        if self.current_time_step >= self.t_max:
             logging.debug(f"Done with rollout")
             self.trace.append(self._get_obs())
             return self.trace[-1], self._get_info(), self._get_reward(), True, False
