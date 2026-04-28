@@ -184,6 +184,8 @@ class StochasticEnv(gym.Env):
         completed_weights: int = 0
         for j in self.completed:
             completed_weights += self.instance.job_weights[j]
+        for k in self.failed:
+            completed_weights -= self.instance.job_weights[j]
         return completed_weights
 
     def _get_obs(self) -> ObservationSpaceType:
