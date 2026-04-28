@@ -182,11 +182,12 @@ class StochasticEnv(gym.Env):
         Returns reward
         """
         completed_weights: int = 0
+        failed_weights: int = 0
         for j in self.completed:
             completed_weights += self.instance.job_weights[j]
         for k in self.failed:
-            completed_weights -= self.instance.job_weights[j]
-        return completed_weights
+            failed_weights -= self.instance.job_weights[k]
+        return completed_weights + failed_weights
 
     def _get_obs(self) -> ObservationSpaceType:
         """
