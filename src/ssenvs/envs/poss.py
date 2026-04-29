@@ -97,6 +97,8 @@ class StochasticEnv(gym.Env):
         """
         Steps the environment
         """
+        self.just_completed = set()
+        self.just_failed = set()
 
         for j, i in action:
             if j not in self.pending:
@@ -119,6 +121,7 @@ class StochasticEnv(gym.Env):
             logging.debug(f"Checking status of job {j} being processed by machine {i}")
             if self.current_time_step > self.deadlines[j]:
                 self.failed.add(j)
+                self.just_failed.add(j)
                 self.idle.add(i)
                 self.elapsed[j] = 0
                 logging.debug(f"Job {j} FAILS: current time: {self.current_time_step}, deadline: {self.deadlines[j]}")
@@ -126,6 +129,7 @@ class StochasticEnv(gym.Env):
                 if self.elapsed[j] > self.instance.process_times[j, i]:
                     logging.debug(f"Job {j} COMPLETED at machine {i}: current time: {self.current_time_step}, deadline: {self.elapsed[j]}")
                     self.completed.add(j)
+                    self.just_completed.add(j)
                     self.idle.add(i)
                     self.feedback[(j,i)] = 1.0
                     self.elapsed[j] = 0
@@ -165,6 +169,7 @@ class StochasticEnv(gym.Env):
         for j in self.pending:
             if self.current_time_step > self.deadlines[j]:
                 self.failed.add(j)
+                self.just_failed.add(j)
                 self.elapsed[j] = 0
             else:
                 next_pending.add(j)
@@ -183,9 +188,9 @@ class StochasticEnv(gym.Env):
         """
         completed_weights: int = 0
         failed_weights: int = 0
-        for j in self.completed:
+        for j in self.just_completed:
             completed_weights += self.instance.job_weights[j]
-        for k in self.failed:
+        for k in self.just_failed:
             failed_weights -= self.instance.job_weights[k]
         return completed_weights + failed_weights
 
