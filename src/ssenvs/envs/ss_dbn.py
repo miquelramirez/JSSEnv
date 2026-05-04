@@ -32,6 +32,7 @@ class BeliefState(object):
     mu: dict[int, np.ndarray]
     machine_utils: np.ndarray
     time_step: int
+    current_return: float
 
 class PredictionEnv(gym.Env):
     """
