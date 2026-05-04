@@ -138,7 +138,7 @@ class PredictionEnv(gym.Env):
         for j_idx, j in enumerate(s_t_minus_1.js_problem.jobs):
             for exe in j.execution_to_remove: 
                 set_idx = j.current_executions[exe].keywords.get("working_set_index")
-                if self.current_time_step < j.params.deadline:
+                if self.current_time_step >= j.params.deadline:
                     prob_this_happened = 0.0
                 else: 
                     prob_this_happened = s_t_minus_1.mu[j_idx][set_idx]
