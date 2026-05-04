@@ -32,7 +32,6 @@ class BeliefState(object):
     mu: dict[int, np.ndarray]
     machine_utils: np.ndarray
     time_step: int
-    current_return: float
 
 class PredictionEnv(gym.Env):
     """
@@ -64,6 +63,7 @@ class PredictionEnv(gym.Env):
         state: BeliefState = options.get('initial')
         self.current_time_step = state.time_step
         self.t_max = options.get('t_max')
+        self.initial_returns = options.get("current_returns", 0.0)
 
         self._app_mask = np.zeros((len(state.js_problem.machines) + 1, len(state.js_problem.jobs)), dtype=np.bool)
 
@@ -210,7 +210,7 @@ class PredictionEnv(gym.Env):
             weights.append(j.params.value)
 
         dist = defaultdict(float)
-        dist[0.0] = 1.0
+        dist[self.initial_returns] = 1.0
 
         for w, theta in zip(weights, thetas):
             new_dist = defaultdict(float)
