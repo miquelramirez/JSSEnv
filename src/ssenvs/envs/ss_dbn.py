@@ -71,7 +71,6 @@ class PredictionEnv(gym.Env):
 
         self.trace = [state]
 
-        self.jobs_completed_monitor = np.array([state.mu[j][1] for j in range(len(state.js_problem.jobs))])
         self.log = {}
         
         return self.trace[-1], self._get_info()
@@ -139,8 +138,11 @@ class PredictionEnv(gym.Env):
         for j_idx, j in enumerate(s_t_minus_1.js_problem.jobs):
             for exe in j.execution_to_remove: 
                 set_idx = j.current_executions[exe].keywords.get("working_set_index")
-                rew = s_t_minus_1.mu[j_idx][set_idx] * j.params.value
-                self.jobs_completed_monitor[j_idx] += s_t_minus_1.mu[j_idx][set_idx]
+                if self.current_time_step < j.params.deadline:
+                    prob_this_happened = 0.0
+                else: 
+                    prob_this_happened = s_t_minus_1.mu[j_idx][set_idx]
+                rew = prob_this_happened * j.params.value
                 start_time = j.current_executions[exe].keywords.get("start_time")
                 m_idx = int(j.current_executions[exe].keywords["machine"])
                 rewards[start_time - 1] = rewards.get(start_time - 1, []) + [(j_idx, m_idx, rew)]
@@ -228,7 +230,6 @@ class PredictionEnv(gym.Env):
         state: BeliefState = self.trace[-1]
         objective = {}
         for j_idx, job in enumerate(state.js_problem.jobs):
-            #completed_prob = state.mu[j_idx][1] - self.jobs_completed_monitor[j_idx]
             #objective += job.params.value * completed_prob
             failed_prob = state.mu[j_idx][2]
             objective[j_idx] = - (job.params.value * failed_prob)
